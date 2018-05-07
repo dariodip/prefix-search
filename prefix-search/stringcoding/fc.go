@@ -1,7 +1,7 @@
 package stringcoding
 
 type FC struct {
-	c Coding
+	c *Coding
 }
 
 func NewFC(strings []string) FC {

@@ -1,7 +1,7 @@
 package stringcoding
 
 type RC struct {
-	c Coding
+	c *Coding
 }
 
 func NewRC(strings []string) RC {

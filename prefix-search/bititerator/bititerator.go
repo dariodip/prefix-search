@@ -28,8 +28,9 @@ type StringToBitIterator interface {
 
 // NewStringToBitIterator creates a StringToBit iterator (of type StringToBitIterator)
 // and returns it.
-func NewStringToBitIterator(s string) StringToBit {
-	return StringToBit{s, stringByteLen(s) - 1, []byte(s), 0}
+func NewStringToBitIterator(s string) *StringToBit {
+	stb := StringToBit{s, stringByteLen(s) - 1, []byte(s), 0}
+	return &stb
 }
 
 // stringByteLen returns the size in bytes of the string. Supports unicode strings
