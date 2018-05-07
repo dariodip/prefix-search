@@ -3,6 +3,7 @@ package stringcoding
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
+	"bytes"
 )
 
 func TestGetDifferentSuffixWithSameLength(t *testing.T) {
@@ -29,4 +30,16 @@ func TestGetDifferentSuffixWithSameLength(t *testing.T) {
 		assert.Nil(err, "An error should not be catched")
 		assert.Equal(expectedSuffix[i], receivedSuffixBit, "Suffix is as expected")
 	}
+}
+
+func TestBitToByte(t *testing.T) {
+	assert := assert.New(t)
+	const s = "ciao"
+	b, e := getBitData(s)
+	assert.Nil(e)
+	assert.Equal(uint64(4*8), b.Len)
+	bt, e := b.bitToByte()
+	assert.Nil(e)
+	resultString := bytes.NewBuffer(bt).String()
+	assert.Equal(s, resultString)
 }

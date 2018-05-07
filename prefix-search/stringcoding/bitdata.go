@@ -12,7 +12,7 @@ type BitData struct {
 	Len uint64
 }
 
-func NewBitData(ba bitarray.BitArray, len uint64) *BitData {
+func NewBitData(ba bitarray.BitArray, len uint64) *BitData { // TODO private ?
 	return &BitData{ba, len}
 }
 
@@ -20,7 +20,7 @@ func NewBitData(ba bitarray.BitArray, len uint64) *BitData {
 func (s1 *BitData) getDifferentSuffix(s2 *BitData) (*BitData, error) {
 	commonPrefixLen := uint64(0)
 
-	idx1:=s1.Len
+	idx1:= s1.Len
 	idx2:=s2.Len
 	for idx1>=0 && idx2>=0 {
 		bit1, e1 := s1.Bits.GetBit(idx1)
@@ -49,4 +49,25 @@ func (s1 *BitData) getDifferentSuffix(s2 *BitData) (*BitData, error) {
 		}
 	}
 	return differentSuffix, nil
+}
+
+func (s1 *BitData) bitToByte() ([]byte, error) {
+	lenInBytes := s1.Len / 8
+	finalBytes := make([]byte, lenInBytes)
+	currentByte := lenInBytes - 1  // last byte
+	currentBit := uint(0)
+	for i := uint64(0); i<s1.Len; i++  {
+		bit, err := s1.Bits.GetBit(i)
+		if err != nil {
+			return nil, err
+		}
+		if bit {
+			finalBytes[currentByte] |= 1 << currentBit
+		}
+		if currentBit == 7 {
+			currentByte--
+		}
+		currentBit = (currentBit + 1) % 8 // cyclic decrement
+	}
+	return finalBytes, nil
 }
