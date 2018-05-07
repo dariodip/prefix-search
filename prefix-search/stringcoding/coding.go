@@ -4,7 +4,6 @@ import (
 	"github.com/golang-collections/go-datastructures/bitarray"
 	"prefix-search/prefix-search/bititerator"
 	"errors"
-	"fmt"
 )
 
 type Coding struct {
@@ -59,30 +58,29 @@ func getBitArray(s string) (bitarray.BitArray, uint64, error) {
 }
 
 func getDifferentSuffix(s1 bitarray.BitArray, s2 bitarray.BitArray, l1 uint64, l2 uint64) (bitarray.BitArray, uint64, error) {
-	minLen := uint64(0)
-	if l1 < l2 {
-		minLen = l1
-	} else {
-		minLen = l2
-	}
 	commonPrefixLen := uint64(0)
-	for i:=uint64(0);i<minLen;i++ {
-		bit1, e1 := s1.GetBit(i)
-		bit2, e2 := s2.GetBit(i)
+
+	idx1:=l1
+	idx2:=l2
+	for idx1>=0 && idx2>=0 {
+		bit1, e1 := s1.GetBit(idx1)
+		bit2, e2 := s2.GetBit(idx2)
 		if e1 != nil || e2 != nil {
-			return nil, uint64(0),  errors.New("Cannot access bitarray in position: " + string(i))
+			return nil, uint64(0),  errors.New("Cannot access bitarray in position: " + string(idx1))
 		}
 		if bit1 == bit2 {
 			commonPrefixLen++
 		} else {
 			break
 		}
+		idx1--
+		idx2--
 	}
-	suffixLen := l2 - commonPrefixLen
-	fmt.Println(suffixLen)
+
+	suffixLen := l2 - commonPrefixLen + 1
 	differentSuffix := bitarray.NewBitArray(suffixLen)
-	for i:=commonPrefixLen;i<l2;i++ {
-		if bit, err := s2.GetBit(i); err != nil {
+	for i:=uint64(0);i<suffixLen;i++ {
+		if bit, err := s2.GetBit(i); err == nil {
 			if bit {
 				differentSuffix.SetBit(i)
 			}
