@@ -43,3 +43,15 @@ func TestBitToByte(t *testing.T) {
 	resultString := bytes.NewBuffer(bt).String()
 	assert.Equal(s, resultString)
 }
+
+
+func TestBitToString(t *testing.T) {
+	assert := assert.New(t)
+	const s = "ciao"
+	b, e := getBitData(s)
+	assert.Nil(e)
+	assert.Equal(uint64(4*8), b.Len)
+	sCheck, e := b.bitToString()
+	assert.Nil(e)
+	assert.Equal(s, sCheck)
+}

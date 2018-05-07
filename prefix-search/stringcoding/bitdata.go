@@ -3,6 +3,7 @@ package stringcoding
 import (
 	"github.com/golang-collections/go-datastructures/bitarray"
 	"errors"
+	"bytes"
 )
 
 type BitData struct {
@@ -70,4 +71,12 @@ func (s1 *BitData) bitToByte() ([]byte, error) {
 		currentBit = (currentBit + 1) % 8 // cyclic decrement
 	}
 	return finalBytes, nil
+}
+
+func (s1 *BitData) bitToString() (string, error)  {
+	bt, err := s1.bitToByte()
+	if err!=nil {
+		return "", err
+	}
+	return bytes.NewBuffer(bt).String(), nil
 }
