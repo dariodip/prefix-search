@@ -4,6 +4,7 @@ import (
 	"github.com/golang-collections/go-datastructures/bitarray"
 	"prefix-search/prefix-search/bititerator"
 	"errors"
+	"fmt"
 )
 
 type Coding struct {
@@ -54,7 +55,7 @@ func getBitArray(s string) (bitarray.BitArray, uint64, error) {
 		}
 		lastIndex++
 	}
-	return btarr, lastIndex, nil
+	return btarr, lastIndex + 1, nil
 }
 
 func getDifferentSuffix(s1 bitarray.BitArray, s2 bitarray.BitArray, l1 uint64, l2 uint64) (bitarray.BitArray, uint64, error) {
@@ -77,8 +78,8 @@ func getDifferentSuffix(s1 bitarray.BitArray, s2 bitarray.BitArray, l1 uint64, l
 			break
 		}
 	}
-
 	suffixLen := l2 - commonPrefixLen
+	fmt.Println(suffixLen)
 	differentSuffix := bitarray.NewBitArray(suffixLen)
 	for i:=commonPrefixLen;i<l2;i++ {
 		if bit, err := s2.GetBit(i); err != nil {
