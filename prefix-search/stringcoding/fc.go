@@ -2,7 +2,7 @@ package stringcoding
 
 import (
 	"github.com/golang-collections/go-datastructures/bitarray"
-	"PrefixSearch/prefix-search/bititerator"
+	"prefix-search/prefix-search/bititerator"
 )
 
 type FC struct {
