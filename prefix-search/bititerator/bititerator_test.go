@@ -6,6 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// A unit test in order to check out if the operations
+// on BitIterator work in the correct way
 func TestBitIterator(t *testing.T) {
 	assert := assert.New(t)
 	const s = "ciao"  // base variable on which iterate

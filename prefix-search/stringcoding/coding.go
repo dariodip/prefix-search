@@ -1,9 +1,12 @@
+// stringcoding package provides an easy way to deal
+// with strings in a bit-to-bit fashion
 package stringcoding
 
 import (
 	"github.com/golang-collections/go-datastructures/bitarray"
 	"prefix-search/prefix-search/bititerator"
 )
+
 
 type Coding struct {
 	// Strings consists of all the concatenated bit sequences
@@ -39,17 +42,23 @@ func (c *Coding) add(s string) error {
 	return nil
 }
 
+// Given a string 's', getBitData returns a pointer to a BitData
+// encoding the string s. If something has gone wrong, returns
+// a nil pointer and and error.
 func getBitData(s string) (*BitData, error) {
-	sBitLen := getLengthInBit(s)
-	btdata := NewBitData(bitarray.NewBitArray(sBitLen), sBitLen)
-	lastIndex := uint64(0)
-	bitit := bititerator.NewStringToBitIterator(s)
+	var (
+		sBitLen = getLengthInBit(s)									// length in bit of the string
+		btdata = NewBitData(bitarray.NewBitArray(sBitLen), sBitLen)	// empty BitData
+		lastIndex uint64											// index
+		bitit = bititerator.NewStringToBitIterator(s)				// BitIterator on the string s
+	)
+
 	for bitit.HasNext() {
 		bit, err := bitit.Next()
 		if err != nil {
-			return nil, err
+			return nil, err // something has gone wrong
 		}
-		if bit {
+		if bit { 	// bit set to 1
 			btdata.Bits.SetBit(lastIndex)
 		}
 		lastIndex++
@@ -57,6 +66,7 @@ func getBitData(s string) (*BitData, error) {
 	return btdata, nil
 }
 
+// Returns the length in bit of the string s.
 func getLengthInBit(s string) uint64 {
 	return uint64(len([]byte(s)) * 8)
 }
