@@ -21,9 +21,10 @@ func TestBitIterator(t *testing.T) {
 	bitIt := NewStringToBitIterator(s) // bit iterator created
 	var currentBit uint  // current bit in the byte
 	currentByte := len(check) - 1  // current byte in the slice
-
+	counter := 0
 	t.Log("Let's retrieve our bits")
 	for bitIt.HasNext() {
+		counter++
 		b, err := bitIt.Next()
 		assert.Nil(err, "Error")
 		if b {  // bit set to 1, we should edit our byte
@@ -37,4 +38,5 @@ func TestBitIterator(t *testing.T) {
 	t.Log("Let's convert our bytes to string")
 	checkS := bytes.NewBuffer(check).String()
 	assert.Equal(s, checkS, s + " equals to " + checkS)
+	assert.Equal(4 * 8, counter)
 }

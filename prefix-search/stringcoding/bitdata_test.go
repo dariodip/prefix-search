@@ -22,6 +22,7 @@ func TestBitData_GetBit(t *testing.T) {
 		expectedLength++
 		assert.Equal(expectedLength, bd.Len, "Length should be %d", expectedLength)
 	}
+	assert.Equal(uint64(3), expectedLength, "ExpectedLegth should be 3")
 
 	for i, checkBit := range checkBit {
 		bit, err := bd.GetBit(uint64(i))

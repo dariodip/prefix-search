@@ -15,6 +15,8 @@ type StringToBit struct {
 	encodedString []byte
 	// current bit on the byte.
 	currentBit uint
+	// are we on the last bit?
+	isLast bool
 }
 
 // StringToBitIterator creates an iterator that iterates upon the bits
@@ -29,7 +31,7 @@ type StringToBitIterator interface {
 // NewStringToBitIterator creates a StringToBit iterator (of type StringToBitIterator)
 // and returns it.
 func NewStringToBitIterator(s string) *StringToBit {
-	stb := StringToBit{s, stringByteLen(s) - 1, []byte(s), 0}
+	stb := StringToBit{s, stringByteLen(s) - 1, []byte(s), 0, false}
 	return &stb
 }
 
@@ -43,16 +45,19 @@ func (bt *StringToBit) Next() (bool, error) {
 	if !bt.HasNext() {
 		return false, errors.New("no more bits")
 	}
+	toRet := uint(bt.encodedString[bt.currentByte]) & (1<<bt.currentBit) == 1<<bt.currentBit
 	if bt.currentBit == 7 {  // we reached last bit, let's switch to the next byte
+		if bt.currentByte == 0 {
+			bt.isLast = true
+		}
 		bt.currentByte--
 	}
-	toRet := uint(bt.encodedString[bt.currentByte]) & (1<<bt.currentBit) == 1<<bt.currentBit
-	bt.currentBit = (bt.currentBit +1) % 8  // cyclic increment
+	bt.currentBit = (bt.currentBit + 1) % 8  // cyclic increment
 	return toRet, nil
 
 }
 
 // HasNext returns true if the sequence has another bit.
 func (bt *StringToBit) HasNext() bool {
-	return  !(bt.currentByte == 0 && bt.currentBit == 7)
+	return  !bt.isLast
 }
