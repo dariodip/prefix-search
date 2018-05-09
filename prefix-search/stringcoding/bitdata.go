@@ -20,10 +20,13 @@ func NewBitData(ba bitarray.BitArray, len uint64) *BitData { // TODO private in 
 	return &BitData{ba, len}
 }
 
+// GetBit returns true if the bit in position 'index' is 1, false otherwise.
+// It returns an error if something has gone wrong
 func (s1 *BitData) GetBit(index uint64) (bool, error) {
 	return s1.bits.GetBit(index)
 }
 
+// TODO doc
 func (s1 *BitData) AppendBits(s2 *BitData) error {
 	for i:=uint64(0); i < s2.Len; i++ { 			// for each bit in the current string
 		bit, err := s2.GetBit(i)					// get the i-th bit in s2
@@ -38,6 +41,7 @@ func (s1 *BitData) AppendBits(s2 *BitData) error {
 	return nil
 }
 
+// TODO doc
 func (s1 *BitData) AppendBit(bit bool) error {
 	if bit {										// if the bit to append is 1
 		err := s1.bits.SetBit(s1.Len)				// append it to the next unmarked bit
@@ -78,7 +82,7 @@ func (s1 *BitData) getDifferentSuffix(s2 *BitData) (*BitData, error) {
 		suffixLen = s2.Len - commonPrefixLen + 1									// length of the different suffix
 		differentSuffix = NewBitData(bitarray.NewBitArray(suffixLen), 0)	    // init a new BitData to keep suffix
 	)
-	for i:=uint64(0);i<differentSuffix.Len;i++ {
+	for i:=uint64(0);i<suffixLen;i++ {
 		if bit, err := s2.GetBit(i); err == nil {
 			differentSuffix.AppendBit(bit)
 		} else {

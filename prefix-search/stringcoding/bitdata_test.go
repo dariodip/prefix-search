@@ -7,6 +7,7 @@ import (
 	"github.com/golang-collections/go-datastructures/bitarray"
 )
 
+// TODO doc
 func TestBitData_GetBit(t *testing.T) {
 	var (
 		assert = assert.New(t)
@@ -31,6 +32,7 @@ func TestBitData_GetBit(t *testing.T) {
 	}
 }
 
+// TODO doc
 func TestBitData_AppendBits(t *testing.T) {
 	var (
 		assert = assert.New(t)
