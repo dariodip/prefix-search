@@ -23,22 +23,36 @@ type Coding struct {
 	// of bit. It can be used for a more efficient processing of the
 	// current string to deal with.
 	LastString *BitData
-	// LastIndex marks the last index in Strings (risp. Starts) arrays.
-	LastIndex uint64
-	// LastLengthsIndex marks the last index in the Lengths array.
-	LastLengthsIndex uint64
+	// NextIndex marks the last index in Strings (risp. Starts) arrays.
+	NextIndex uint64
+	// NextLengthsIndex marks the last index in the Lengths array.
+	NextLengthsIndex uint64
 }
 
 // Create creates and returns a new Coding structure inserting the strings
 // that are in the array of strings.
 func New(strings []string, lenCalc func(uint, uint) uint) *Coding {
-	fc := Coding{LastIndex:0} // TODO
+	fc := Coding{NextIndex:0} // TODO
 	return &fc
 }
 
 // add adds the string s to the structure
 func (c *Coding) add(s string) error {
 	// TODO
+	return nil
+}
+
+func (c *Coding) addUnaryLenght(n uint64) error {
+	for i:=uint64(0);i<n;i++ {
+		if err := c.Lengths.Bits.SetBit(c.NextLengthsIndex); err != nil {
+			return err
+		}
+		c.Lengths.Len++
+		c.NextLengthsIndex++
+	}
+
+	c.Lengths.Len++
+	c.NextLengthsIndex++
 	return nil
 }
 
