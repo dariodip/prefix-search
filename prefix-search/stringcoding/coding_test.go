@@ -3,7 +3,6 @@ package stringcoding
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
-	"fmt"
 )
 
 // Unit test in order to check out if the method getBitData
@@ -75,7 +74,6 @@ func TestGetBitDataTwoChar(t *testing.T) {
 			true, true}	// binary for ab (reverse)
 	)
 
-	fmt.Println(b2.bitToByte())
 	assert.Nil(e2, "Error in conversion 'aa'")
 	assert.Equal(uint64(16), b2.Len,"Length of 'aa' in bits should be 14")
 	for i, bitCheck := range s2check {
