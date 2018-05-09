@@ -46,26 +46,33 @@ func New(strings []string, lenCalc func(uint, uint) uint) *Coding {
 
 // add adds the string s to the structure
 func (c *Coding) add(s string) error {
-	// TODO
+	if c.LastString == nil {  // first string case
+
+	}
+	return nil
+}
+
+func (c *Coding) enqueueBitData(bd BitData) error {
 	return nil
 }
 
 func (c *Coding) addUnaryLenght(n uint64) error {
 	for i:=uint64(0);i<n;i++ {
-		if err := c.Lengths.Bits.SetBit(c.NextLengthsIndex); err != nil {
+		if err := c.Lengths.AppendBit(true); err != nil {
 			return err
 		}
-		c.Lengths.Len++
 		c.NextLengthsIndex++
 	}
-	c.Lengths.Len++
+	if err := c.Lengths.AppendBit(false); err != nil {
+		return err
+	}
 	c.NextLengthsIndex++
 	return nil
 }
 
 // Given an index, returns the idx-th value of the unary array
 func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
-	if bit, err := c.Lengths.Bits.GetBit(idx); err == nil {
+	if bit, err := c.Lengths.GetBit(idx); err == nil {
 		if bit && idx != uint64(0) {
 			return 0, errors.New("index should point to a 0")
 		}
@@ -77,7 +84,7 @@ func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
 	current:=idx
 	for {
 		current++
-		if bit, err := c.Lengths.Bits.GetBit(current); err == nil {
+		if bit, err := c.Lengths.GetBit(current); err == nil {
 			if bit {
 				val++
 			} else {
@@ -97,20 +104,17 @@ func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
 func getBitData(s string) (*BitData, error) {
 	var (
 		sBitLen = getLengthInBit(s)									// length in bit of the string
-		btdata = NewBitData(bitarray.NewBitArray(sBitLen), sBitLen)	// empty BitData
-		lastIndex uint64											// index
+		btdata = NewBitData(bitarray.NewBitArray(sBitLen), 0)	// empty BitData
 		bitit = bititerator.NewStringToBitIterator(s)				// BitIterator on the string s
 	)
 
 	for bitit.HasNext() {
 		bit, err := bitit.Next()
 		if err != nil {
+			panic(err)
 			return nil, err // something has gone wrong
 		}
-		if bit { 	// bit set to 1
-			btdata.Bits.SetBit(lastIndex)
-		}
-		lastIndex++
+		btdata.AppendBit(bit)
 	}
 	return btdata, nil
 }

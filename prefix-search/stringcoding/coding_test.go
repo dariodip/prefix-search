@@ -19,7 +19,7 @@ func TestGetBitDataSingleChar(t *testing.T) {
 	assert.Nil(e1, "Error in conversion 'a'")
 	assert.Equal(uint64(8), b1.Len,"Length of 'a' in bits should be 7")
 	for i, bitCheck := range s1check {
-		check1bit, _ := b1.Bits.GetBit(uint64(i))
+		check1bit, _ := b1.bits.GetBit(uint64(i))
 		assert.Equal(bitCheck, check1bit, "Not equals in position: " + string(i))
 	}
 }
@@ -48,7 +48,7 @@ func TestAddAndGetUnaryLength(t *testing.T) {
 	assert.Equal(expectedLength, lengthBitData.Len, "Len value should be 6 (5 + 1)")
 	assert.Equal(expectedLength, c.NextLengthsIndex, "NextLengthsIndex should be 6")
 	for lastIndex >= 0 {
-		bit, err := lengthBitData.Bits.GetBit(lastIndex)
+		bit, err := lengthBitData.bits.GetBit(lastIndex)
 		assert.Nil(err, "Error should be nil")
 		if !bit {
 			break
@@ -79,7 +79,7 @@ func TestGetBitDataTwoChar(t *testing.T) {
 	assert.Nil(e2, "Error in conversion 'aa'")
 	assert.Equal(uint64(16), b2.Len,"Length of 'aa' in bits should be 14")
 	for i, bitCheck := range s2check {
-		check2bit, _ := b2.Bits.GetBit(uint64(i))
+		check2bit, _ := b2.bits.GetBit(uint64(i))
 		assert.Equal(bitCheck, check2bit, "Not equals in position: " + string(i))
 	}
 }
