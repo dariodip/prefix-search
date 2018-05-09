@@ -5,6 +5,7 @@ package stringcoding
 import (
 	"github.com/golang-collections/go-datastructures/bitarray"
 	"prefix-search/prefix-search/bititerator"
+	"errors"
 )
 
 
@@ -32,12 +33,13 @@ type Coding struct {
 // Create creates and returns a new Coding structure inserting the strings
 // that are in the array of strings.
 func New(strings []string, lenCalc func(uint, uint) uint) *Coding {
+	maxCapacity:=getTotalBitCount(strings)
+	maxLengthCapacity:=maxCapacity+uint64(len(strings)-1)
 	fc := Coding{
-		Strings: NewBitData(bitarray.NewBitArray(0), 0),
-		Starts:	NewBitData(bitarray.NewBitArray(0), 0),
-		Lengths: NewBitData(bitarray.NewBitArray(0), 0),
-		LastString: NewBitData(bitarray.NewBitArray(0), 0),
-	} // TODO
+		Strings: NewBitData(bitarray.NewBitArray(maxCapacity), 0),
+		Starts:	NewBitData(bitarray.NewBitArray(maxCapacity), 0),
+		Lengths: NewBitData(bitarray.NewBitArray(maxLengthCapacity), 0),
+	} // TODO insert
 	return &fc
 }
 
@@ -59,6 +61,34 @@ func (c *Coding) addUnaryLenght(n uint64) error {
 	c.Lengths.Len++
 	c.NextLengthsIndex++
 	return nil
+}
+
+// Given an index, returns the idx-th value of the unary array
+func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
+	if bit, err := c.Lengths.Bits.GetBit(idx); err != nil {
+		if bit {
+			return 0, errors.New("Index should point to a 0")
+		}
+	} else {
+		return 0, err
+	}
+
+	var val uint64
+	current:=idx
+	for {
+		current++
+		if bit, err := c.Lengths.Bits.GetBit(current); err != nil {
+			if bit {
+				val++
+			} else {
+				break
+			}
+		} else {
+			return 0, err
+		}
+	}
+
+	return val, nil
 }
 
 // Given a string 's', getBitData returns a pointer to a BitData
@@ -90,4 +120,12 @@ func getLengthInBit(s string) uint64 {
 	return uint64(len([]byte(s)) * 8)
 }
 
+func getTotalBitCount(strings []string) uint64 {
+	var totalBitLen uint64
+	for _, s:=range strings {
+		totalBitLen+=getLengthInBit(s)
+	}
+
+	return totalBitLen
+}
 
