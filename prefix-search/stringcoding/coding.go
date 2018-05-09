@@ -32,7 +32,12 @@ type Coding struct {
 // Create creates and returns a new Coding structure inserting the strings
 // that are in the array of strings.
 func New(strings []string, lenCalc func(uint, uint) uint) *Coding {
-	fc := Coding{NextIndex:0} // TODO
+	fc := Coding{
+		Strings: NewBitData(bitarray.NewBitArray(0), 0),
+		Starts:	NewBitData(bitarray.NewBitArray(0), 0),
+		Lengths: NewBitData(bitarray.NewBitArray(0), 0),
+		LastString: NewBitData(bitarray.NewBitArray(0), 0),
+	} // TODO
 	return &fc
 }
 
