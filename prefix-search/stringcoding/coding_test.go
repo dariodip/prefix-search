@@ -24,6 +24,46 @@ func TestGetBitDataSingleChar(t *testing.T) {
 	}
 }
 
+func TestAddAndGetUnaryLength(t *testing.T) {
+	assert := assert.New(t)
+	const (
+		n1 = uint64(5)										// length to set
+		expectedLength = uint64(1 + 5 + 1)					// first 0 + 5 * '1' + last 0
+		expected1sCount = uint64(5)
+	)
+	var (
+		c = New([]string{"ciaos"}, func(u uint, u2 uint) uint {  // stub coding struct
+			return 0
+		})
+		onesCounter uint64									// counter of 1s
+		lastIndex = uint64(1)								// last index of the array
+	)
+
+	t.Log("Add unary value")
+	err := c.addUnaryLenght(n1)
+	assert.Nil(err, "Error should be nil")
+	t.Log("Get lengths array")
+	lengthBitData := c.Lengths
+	assert.NotNil(lengthBitData, "Lengths array should not be nil")
+	assert.Equal(expectedLength, lengthBitData.Len, "Len value should be 6 (5 + 1)")
+	assert.Equal(expectedLength, c.NextLengthsIndex, "NextLengthsIndex should be 6")
+	for lastIndex >= 0 {
+		bit, err := lengthBitData.Bits.GetBit(lastIndex)
+		assert.Nil(err, "Error should be nil")
+		if !bit {
+			break
+		} else {
+			onesCounter++
+		}
+		lastIndex++
+	}
+	assert.Equal(expected1sCount, onesCounter, "Array contains 5 ones")
+
+	checkUnaryToInt, err := c.unaryToInt(uint64(0))
+	assert.Nil(err, "Error should be nil")
+	assert.Equal(expected1sCount, checkUnaryToInt, "Check unary to int should be 5")
+}
+
 // Unit test in order to check out if the method getBitData
 // works on a string of two characters
 func TestGetBitDataTwoChar(t *testing.T) {

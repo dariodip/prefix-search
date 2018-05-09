@@ -38,7 +38,8 @@ func New(strings []string, lenCalc func(uint, uint) uint) *Coding {
 	fc := Coding{
 		Strings: NewBitData(bitarray.NewBitArray(maxCapacity), 0),
 		Starts:	NewBitData(bitarray.NewBitArray(maxCapacity), 0),
-		Lengths: NewBitData(bitarray.NewBitArray(maxLengthCapacity), 0),
+		Lengths: NewBitData(bitarray.NewBitArray(maxLengthCapacity), 1),
+		NextLengthsIndex: uint64(1),
 	} // TODO insert
 	return &fc
 }
@@ -57,7 +58,6 @@ func (c *Coding) addUnaryLenght(n uint64) error {
 		c.Lengths.Len++
 		c.NextLengthsIndex++
 	}
-
 	c.Lengths.Len++
 	c.NextLengthsIndex++
 	return nil
@@ -65,9 +65,9 @@ func (c *Coding) addUnaryLenght(n uint64) error {
 
 // Given an index, returns the idx-th value of the unary array
 func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
-	if bit, err := c.Lengths.Bits.GetBit(idx); err != nil {
-		if bit {
-			return 0, errors.New("Index should point to a 0")
+	if bit, err := c.Lengths.Bits.GetBit(idx); err == nil {
+		if bit && idx != uint64(0) {
+			return 0, errors.New("index should point to a 0")
 		}
 	} else {
 		return 0, err
@@ -77,7 +77,7 @@ func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
 	current:=idx
 	for {
 		current++
-		if bit, err := c.Lengths.Bits.GetBit(current); err != nil {
+		if bit, err := c.Lengths.Bits.GetBit(current); err == nil {
 			if bit {
 				val++
 			} else {
