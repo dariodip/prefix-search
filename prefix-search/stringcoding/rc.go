@@ -5,7 +5,7 @@ type RC struct {
 }
 
 func NewRC(strings []string) RC {
-	return RC{New(strings, func (prefixLen, stringLen uint) uint {
+	return RC{New(strings, func (prefixLen, stringLen uint64) uint64 {
 		return stringLen - prefixLen
 	})}
 }

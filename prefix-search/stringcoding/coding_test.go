@@ -31,7 +31,7 @@ func TestAddAndGetUnaryLength(t *testing.T) {
 		expected1sCount = uint64(5)
 	)
 	var (
-		c = New([]string{"ciaos"}, func(u uint, u2 uint) uint {  // stub coding struct
+		c = New([]string{"ciaos"}, func(u, u2 uint64) uint64 {  // stub coding struct
 			return 0
 		})
 		onesCounter uint64									// counter of 1s
@@ -39,7 +39,7 @@ func TestAddAndGetUnaryLength(t *testing.T) {
 	)
 
 	t.Log("Add unary value")
-	err := c.addUnaryLenght(n1)
+	err := c.addUnaryLength(n1)
 	assert.Nil(err, "Error should be nil")
 	t.Log("Get lengths array")
 	lengthBitData := c.Lengths

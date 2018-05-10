@@ -81,7 +81,7 @@ func TestGetDifferentSuffixWithSameLength(t *testing.T) {
 	assert.NotEqual(b1.bits, b2.bits, "Bitarrays are different")
 
 	expectedSuffix := []bool{true, true}  // The different suffix should be "11"
-	receivedSuffix, err := b1.getDifferentSuffix(b2)
+	receivedSuffix, err := b1.GetDifferentSuffix(b2)
 	assert.Nil(err, "Unexpected error")
 	assert.Equal(uint64(2), receivedSuffix.Len, "Prefix should be of 2 bits")
 	for i := uint64(0);i<receivedSuffix.Len;i++ {
@@ -112,7 +112,7 @@ func TestGetDifferentSuffixWithDifferentLength(t *testing.T) {
 
 	// The different suffix should be the reverse of "11 01100001"
 	expectedSuffix := []bool{true, false, false, false, false, true, true, false, true, true}
-	receivedSuffix, err := b1.getDifferentSuffix(b2)
+	receivedSuffix, err := b1.GetDifferentSuffix(b2)
 	assert.Nil(err, "Unexpected error")
 	assert.Equal(uint64(10), receivedSuffix.Len, "Prefix should be of 10 bits")
 	for i := uint64(0);i<receivedSuffix.Len;i++ {

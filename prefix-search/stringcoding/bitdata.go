@@ -53,16 +53,45 @@ func (s1 *BitData) AppendBit(bit bool) error {
 	return nil
 }
 
-// getDifferentSuffix, given another pointer to a BitData, returns a new
+// SetBit sets a bit in the BitData if the index is not out of bound.
+// It won't resize the structure so Len will be as before.
+func (s1 *BitData) SetBit(index uint64) error {
+	if index >= s1.Len {
+		return errors.New("index out of bound")
+	}
+	err := s1.bits.SetBit(index)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetDifferentSuffix, given another pointer to a BitData, returns a new
 // BitData containing the suffix that is not equal between the two BitDatas.
 // If something goes wrong, returns a nil pointer and an error.
-func (s1 *BitData) getDifferentSuffix(s2 *BitData) (*BitData, error) {
+func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 	var(
 		commonPrefixLen uint64  // length of the common prefix
 		idx1 = s1.Len			// length in bit of the first "bitted" string
 		idx2 = s2.Len			// length in bit of the second "bitted" string
 	)
-
+	if s1.bits == nil {
+		return nil, errors.New("cannot append to a non initialized BitData")
+	}
+	if s2.bits == nil || s2.Len == uint64(0) { 	// trying to find common prefix between a string and a void one
+		differentSuffix := NewBitData(bitarray.NewBitArray(s1.Len), 0)
+		for i:=uint64(0);i<s1.Len;i++ {  // we must copy the first array!
+			bit, errGet := s1.GetBit(i)
+			if errGet != nil {
+				return nil, errGet
+			}
+			errAppend := differentSuffix.AppendBit(bit)
+			if errAppend != nil {
+				return nil, errAppend
+			}
+		}
+		return s1, nil
+	}
 	for idx1>=0 && idx2>=0 {  // we must keep both the indexes in order to avoid out of bound
 		bit1, e1 := s1.GetBit(idx1) // get bits in position idx1 (risp. idx2) on both strings
 		bit2, e2 := s2.GetBit(idx2)

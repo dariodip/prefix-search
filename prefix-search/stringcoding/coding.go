@@ -28,11 +28,13 @@ type Coding struct {
 	NextIndex uint64
 	// NextLengthsIndex marks the last index in the Lengths array.
 	NextLengthsIndex uint64
+	// Function that computes the value to insert in the Lengths array.
+	LengthCalcFunction func(uint64, uint64) uint64
 }
 
 // Create creates and returns a new Coding structure inserting the strings
 // that are in the array of strings.
-func New(strings []string, lenCalc func(uint, uint) uint) *Coding {
+func New(strings []string, lenCalc func(uint64, uint64) uint64) *Coding {
 	maxCapacity:=getTotalBitCount(strings)
 	maxLengthCapacity:=maxCapacity+uint64(len(strings)-1)
 	fc := Coding{
@@ -40,23 +42,56 @@ func New(strings []string, lenCalc func(uint, uint) uint) *Coding {
 		Starts:	NewBitData(bitarray.NewBitArray(maxCapacity), 0),
 		Lengths: NewBitData(bitarray.NewBitArray(maxLengthCapacity), 1),
 		NextLengthsIndex: uint64(1),
-	} // TODO insert
+		LengthCalcFunction: lenCalc,
+	}
+	err := fc.Starts.AppendBit(true)	// init struct Starts
+	if err != nil {							// we have no guarantees that it will work because of the
+		panic(err)							// error in appending the first bit in the structure
+	}										// so we have to spread panic :D
+	// TODO insert
 	return &fc
 }
 
 // add adds the string s to the structure
 func (c *Coding) add(s string) error {
-	if c.LastString == nil {  // first string case
-
+	bdS, errGbd := getBitData(s) 						 			// 1: convert string s to a bitdata bdS
+	if errGbd != nil {
+		return errGbd
 	}
+	differentSuffix, errGds := bdS.GetDifferentSuffix(c.LastString)	// 2: get different suffix
+	if errGds != nil {
+		return errGds
+	}
+	errAppendBit := c.Strings.AppendBits(differentSuffix)  			// 3: append string to Strings bitdata
+	if errAppendBit != nil {
+		panic(errAppendBit)	// we don't know if the method has written in the structure
+		// so we have to stop all the process and redo... sorry :(
+	}
+	errAppUL := c.addUnaryLength(differentSuffix.Len)				// 4: append different suffix' length to Lengths
+	if errAppUL != nil {	// as above...
+		panic(errAppUL)
+	}
+	errSetSWO := c.setStartsWithOffset(differentSuffix) 			// 5: set the bit of the next string in the Starts array
+	if errSetSWO != nil {
+		panic(errSetSWO)
+	}
+	c.LastString = bdS           									// 6: update
 	return nil
 }
+
+func (c *Coding) setStartsWithOffset(differentSuffix *BitData) error {
+	return c.Starts.SetBit(differentSuffix.Len + c.Starts.Len)
+}
+
 
 func (c *Coding) enqueueBitData(bd BitData) error {
 	return nil
 }
 
-func (c *Coding) addUnaryLenght(n uint64) error {
+func (c *Coding) addUnaryLength(n uint64) error {
+	if c.Lengths == nil {
+		return errors.New("error in trying to add on a non initialized BitData")
+	}
 	for i:=uint64(0);i<n;i++ {
 		if err := c.Lengths.AppendBit(true); err != nil {
 			return err
@@ -72,12 +107,15 @@ func (c *Coding) addUnaryLenght(n uint64) error {
 
 // Given an index, returns the idx-th value of the unary array
 func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
+	if c.Lengths == nil {
+		return uint64(0), errors.New("error in trying to add on a non initialized BitData")
+	}
 	if bit, err := c.Lengths.GetBit(idx); err == nil {
 		if bit && idx != uint64(0) {
-			return 0, errors.New("index should point to a 0")
+			return uint64(0), errors.New("index should point to a 0")
 		}
 	} else {
-		return 0, err
+		return uint64(0), err
 	}
 
 	var val uint64
@@ -91,10 +129,9 @@ func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
 				break
 			}
 		} else {
-			return 0, err
+			return uint64(0), err
 		}
 	}
-
 	return val, nil
 }
 
