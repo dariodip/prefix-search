@@ -3,11 +3,11 @@
 package stringcoding
 
 import (
+	"errors"
+	"fmt"
 	"github.com/golang-collections/go-datastructures/bitarray"
 	"prefix-search/prefix-search/bititerator"
-	"errors"
 )
-
 
 type Coding struct {
 	// Strings consists of all the concatenated bit sequences
@@ -32,57 +32,61 @@ type Coding struct {
 	LengthCalcFunction func(uint64, uint64) uint64
 }
 
+func (c *Coding) String() string {
+	return fmt.Sprintf("type:%T, Strings: %v, Starts:%v, Lengths:%v, LastString:%v, NextIndex:%v, NextLengthsIndex:%v, LengthCalcFunction:%T",
+		c, c.Strings, c.Starts, c.Lengths, c.LastString, c.NextIndex, c.NextLengthsIndex, c.LengthCalcFunction)
+}
+
 // Create creates and returns a new Coding structure inserting the strings
 // that are in the array of strings.
 func New(strings []string, lenCalc func(uint64, uint64) uint64) *Coding {
-	maxCapacity:=getTotalBitCount(strings)
-	maxLengthCapacity:=maxCapacity+uint64(len(strings)-1)
+	maxCapacity := getTotalBitCount(strings)
+	maxLengthCapacity := maxCapacity + uint64(len(strings)-1)
 	fc := Coding{
-		Strings: NewBitData(bitarray.NewBitArray(maxCapacity), 0),
-		Starts:	NewBitData(bitarray.NewBitArray(maxCapacity), 0),
-		Lengths: NewBitData(bitarray.NewBitArray(maxLengthCapacity), 1),
-		NextLengthsIndex: uint64(1),
+		Strings:            NewBitData(bitarray.NewBitArray(maxCapacity), 0),
+		Starts:             NewBitData(bitarray.NewBitArray(maxCapacity), 0),
+		Lengths:            NewBitData(bitarray.NewBitArray(maxLengthCapacity), 1),
+		NextLengthsIndex:   uint64(1),
 		LengthCalcFunction: lenCalc,
 	}
-	err := fc.Starts.AppendBit(true)	// init struct Starts
-	if err != nil {							// we have no guarantees that it will work because of the
-		panic(err)							// error in appending the first bit in the structure
-	}										// so we have to spread panic :D
+	err := fc.Starts.AppendBit(true) // init struct Starts
+	if err != nil {                  // we have no guarantees that it will work because of the
+		panic(err) // error in appending the first bit in the structure
+	} // so we have to spread panic :D
 	// TODO insert
 	return &fc
 }
 
 // add adds the string s to the structure
 func (c *Coding) add(s string) error {
-	bdS, errGbd := getBitData(s) 						 			// 1: convert string s to a bitdata bdS
+	bdS, errGbd := getBitData(s) // 1: convert string s to a bitdata bdS
 	if errGbd != nil {
 		return errGbd
 	}
-	differentSuffix, errGds := bdS.GetDifferentSuffix(c.LastString)	// 2: get different suffix
+	differentSuffix, errGds := bdS.GetDifferentSuffix(c.LastString) // 2: get different suffix
 	if errGds != nil {
 		return errGds
 	}
-	errAppendBit := c.Strings.AppendBits(differentSuffix)  			// 3: append string to Strings bitdata
+	errAppendBit := c.Strings.AppendBits(differentSuffix) // 3: append string to Strings bitdata
 	if errAppendBit != nil {
-		panic(errAppendBit)	// we don't know if the method has written in the structure
+		panic(errAppendBit) // we don't know if the method has written in the structure
 		// so we have to stop all the process and redo... sorry :(
 	}
-	errAppUL := c.addUnaryLength(differentSuffix.Len)				// 4: append different suffix' length to Lengths
-	if errAppUL != nil {	// as above...
+	errAppUL := c.addUnaryLength(differentSuffix.Len) // 4: append different suffix' length to Lengths
+	if errAppUL != nil {                              // as above...
 		panic(errAppUL)
 	}
-	errSetSWO := c.setStartsWithOffset(differentSuffix) 			// 5: set the bit of the next string in the Starts array
+	errSetSWO := c.setStartsWithOffset(differentSuffix) // 5: set the bit of the next string in the Starts array
 	if errSetSWO != nil {
 		panic(errSetSWO)
 	}
-	c.LastString = bdS           									// 6: update
+	c.LastString = bdS // 6: update
 	return nil
 }
 
 func (c *Coding) setStartsWithOffset(differentSuffix *BitData) error {
 	return c.Starts.SetBit(differentSuffix.Len + c.Starts.Len)
 }
-
 
 func (c *Coding) enqueueBitData(bd BitData) error {
 	return nil
@@ -92,7 +96,7 @@ func (c *Coding) addUnaryLength(n uint64) error {
 	if c.Lengths == nil {
 		return errors.New("error in trying to add on a non initialized BitData")
 	}
-	for i:=uint64(0);i<n;i++ {
+	for i := uint64(0); i < n; i++ {
 		if err := c.Lengths.AppendBit(true); err != nil {
 			return err
 		}
@@ -119,7 +123,7 @@ func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
 	}
 
 	var val uint64
-	current:=idx
+	current := idx
 	for {
 		current++
 		if bit, err := c.Lengths.GetBit(current); err == nil {
@@ -140,9 +144,9 @@ func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
 // a nil pointer and and error.
 func getBitData(s string) (*BitData, error) {
 	var (
-		sBitLen = getLengthInBit(s)									// length in bit of the string
-		btdata = NewBitData(bitarray.NewBitArray(sBitLen), 0)	// empty BitData
-		bitit = bititerator.NewStringToBitIterator(s)				// BitIterator on the string s
+		sBitLen = getLengthInBit(s)                            // length in bit of the string
+		btdata  = NewBitData(bitarray.NewBitArray(sBitLen), 0) // empty BitData
+		bitit   = bititerator.NewStringToBitIterator(s)        // BitIterator on the string s
 	)
 
 	for bitit.HasNext() {
@@ -163,10 +167,9 @@ func getLengthInBit(s string) uint64 {
 
 func getTotalBitCount(strings []string) uint64 {
 	var totalBitLen uint64
-	for _, s:=range strings {
-		totalBitLen+=getLengthInBit(s)
+	for _, s := range strings {
+		totalBitLen += getLengthInBit(s)
 	}
 
 	return totalBitLen
 }
-
