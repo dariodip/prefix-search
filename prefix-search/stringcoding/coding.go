@@ -49,10 +49,6 @@ func New(strings []string, lenCalc func(uint64, uint64) uint64) *Coding {
 		NextLengthsIndex:   uint64(1),
 		LengthCalcFunction: lenCalc,
 	}
-	err := fc.Starts.AppendBit(true) // init struct Starts
-	if err != nil {                  // we have no guarantees that it will work because of the
-		panic(err) // error in appending the first bit in the structure
-	} // so we have to spread panic :D
 	// TODO insert
 	return &fc
 }
@@ -85,7 +81,15 @@ func (c *Coding) add(s string) error {
 }
 
 func (c *Coding) setStartsWithOffset(differentSuffix *BitData) error {
-	return c.Starts.SetBit(differentSuffix.Len + c.Starts.Len)
+	if differentSuffix.Len == 0 {
+		return nil  // nothing to do here
+	}
+
+	c.Starts.AppendBit(true)
+
+	c.Starts.Len +=  differentSuffix.Len - 1
+
+	return nil
 }
 
 func (c *Coding) enqueueBitData(bd BitData) error {

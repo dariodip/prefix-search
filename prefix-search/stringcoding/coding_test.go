@@ -3,6 +3,7 @@ package stringcoding
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
+	"github.com/golang-collections/go-datastructures/bitarray"
 )
 
 // Unit test in order to check out if the method getBitData
@@ -97,4 +98,42 @@ func TestGetLengthInBit(t *testing.T)  {
 
 	c1 := "a"
 	assert.Equal(getLengthInBit(c1), uint64(8))
+}
+
+// Unit test in order to check out if the methon add works
+// by inserting 1 or 2 strings
+func TestCoding_Add(t *testing.T) {
+
+}
+
+func TestSetStartsWithOffset(t *testing.T) {
+	var (
+		assert = assert.New(t)
+		c = New([]string{"ciao"}, func(len1, len2 uint64) (uint64) {
+			return 0  // we don't need that function here, so we simply use a stub method
+		})
+		bd = NewBitData(bitarray.NewBitArray(8), 0)
+		checkBit = []bool{false, true, false}
+		expectedBits = []bool{true, false, false, true, false, false}
+	)
+
+	for i, bit := range checkBit {
+		err := bd.AppendBit(bit)
+		assert.Nil(err, "Cannot set bit %d", i)
+	}
+
+	err1 := c.setStartsWithOffset(bd)
+	assert.Nil(err1, "Something goes wrong %s", err1)
+	err2 := c.setStartsWithOffset(bd)
+	assert.Nil(err2, "Something goes wrong %s", err2)
+
+	assert.Equal(c.Starts.Len, bd.Len * 2, "Lengths are not equal. Found %d, expected %d",
+											c.Starts.Len, bd.Len * 2)
+
+	for i := uint64(0); i < c.Starts.Len; i++ {
+		bit, err := c.Starts.GetBit(i)
+		assert.Nil(err, "Cannot access to bit %d", i)
+		assert.Equal(bit, expectedBits[i], "Wrong bit at position %d. Found %t, expected %t",
+					 i, bit, expectedBits[i])
+	}
 }

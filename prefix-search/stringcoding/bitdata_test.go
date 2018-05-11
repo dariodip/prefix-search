@@ -32,6 +32,30 @@ func TestBitData_GetBit(t *testing.T) {
 	}
 }
 
+func TestBitData_SetBit(t *testing.T) {
+	var (
+		assert = assert.New(t)
+		bd = NewBitData(bitarray.NewBitArray(8), 0)
+		checkBit = []bool{false, true, true}
+	)
+
+	for i, bit := range checkBit {
+		err := bd.AppendBit(bit)
+		assert.Nil(err, "Cannot set bit %d", i)
+	}
+
+	bitToSet := uint64(0)
+	err := bd.SetBit(bitToSet)
+	assert.Nil(err, "Cannot set bit %d", bitToSet)
+
+	bit, err := bd.GetBit(bitToSet)
+	assert.Nil(err, "Something goes wrong")
+	assert.Equal(bit, true, "Bit %d has a not valid value. Expected %t, found %t",
+				 bitToSet, true, bit)
+
+	assert.Equal(uint64(len(checkBit)), bd.Len, "BitData len should be 3")
+}
+
 // TODO doc
 func TestBitData_AppendBits(t *testing.T) {
 	var (
