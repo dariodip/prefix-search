@@ -59,16 +59,28 @@ func (c *Coding) add(s string) error {
 	if errGbd != nil {
 		return errGbd
 	}
-	differentSuffix, errGds := bdS.GetDifferentSuffix(c.LastString) // 2: get different suffix
-	if errGds != nil {
-		return errGds
+
+	var differentSuffix *BitData
+	if c.LastString != nil {
+		var errGds error
+		differentSuffix, errGds = c.LastString.GetDifferentSuffix(bdS)
+		if errGds != nil {
+			return errGds
+		}
+	} else {
+		differentSuffix = bdS
 	}
+
+	// 2: get different suffix
 	errAppendBit := c.Strings.AppendBits(differentSuffix) // 3: append string to Strings bitdata
 	if errAppendBit != nil {
 		panic(errAppendBit) // we don't know if the method has written in the structure
 		// so we have to stop all the process and redo... sorry :(
 	}
-	errAppUL := c.addUnaryLength(differentSuffix.Len) // 4: append different suffix' length to Lengths
+
+	// 4: append different suffix' length to Lengths
+	prefixLen := getLengthInBit(s) - differentSuffix.Len
+	errAppUL := c.addUnaryLength(c.LengthCalcFunction(prefixLen, getLengthInBit(s)))
 	if errAppUL != nil {                              // as above...
 		panic(errAppUL)
 	}

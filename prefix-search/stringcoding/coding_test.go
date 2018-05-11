@@ -100,10 +100,95 @@ func TestGetLengthInBit(t *testing.T)  {
 	assert.Equal(getLengthInBit(c1), uint64(8))
 }
 
-// Unit test in order to check out if the methon add works
+// Unit test in order to check out if the method add works
 // by inserting 1 or 2 strings
 func TestCoding_Add(t *testing.T) {
+	const (
+		s1 = "cia"
+		s2 = "cic"
+	)
 
+	var (
+		assert  = assert.New(t)
+		lenCalc = func(prefixLen, stringLen uint64) (uint64) {
+			return stringLen - prefixLen
+		}
+		c = New([]string{s1, s2}, lenCalc)
+		stringsBits = []bool{
+			true, false, false, false, false, true, true, false,
+			true, false, false, true, false, true, true, false,
+			true, true, false, false, false, true, true, false,
+			true, true,
+		}
+
+		startsBits = []bool{
+			true, false, false, false, false, false, false, false, false, false, false, false, false,
+			false, false, false, false, false, false, false, false, false, false, false, true, false,
+		}
+	)
+
+	assert.NotEqual(s1, s2, "The two test strings must not be equal"	)
+
+	c.add(s1)
+
+	// Strings and LastString check, since we have only one strings for now we can use getBitData
+	s1bits, err := getBitData(s1)
+	assert.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s1, err)
+	assert.Equal(s1bits.bits, c.Strings.bits, "Wrong conversion on Strings")
+	assert.Equal(s1bits.Len, c.Strings.Len, "Wrong len on Strings")
+
+	assert.Equal(s1bits.bits, c.LastString.bits, "Wrong conversion on LastString, should be equal to %s",
+		s1)
+	assert.Equal(s1bits.Len, c.LastString.Len, "Wrong len on LastString, should be %d", s1bits.Len)
+
+	// Starts check
+	bit, err := c.Starts.GetBit(0)
+	assert.Nil(err, "Cannot access bit %d. %s", 0, err)
+	assert.Equal(bit, true, "Wrong bit at position %d. Found %t, expected %t", 0, bit, true)
+	for i := uint64(1); i < c.Starts.Len; i++ {
+		bit, err := c.Starts.GetBit(i)
+		assert.Nil(err, "Cannot access bit %d. %s", i, err)
+		assert.Equal(bit, false, "Wrong bit at position %d. Found %t, expected %t", i, bit, false)
+	}
+
+	// Lenghts
+	s1len, err := c.unaryToInt(0)
+	assert.Nil(err, "Something goes wrong: %s", err)
+	assert.Equal(s1len, getLengthInBit(s1), "Some bit are missing in Lenghts. Found %d, expected %d", s1len,
+		len(s1))
+
+	c.add(s2)
+
+	// Check if lastString is now s2
+	s2bits, err := getBitData(s2)
+	assert.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s1, err)
+	assert.Equal(s2bits.bits, c.LastString.bits, "Wrong conversion on LastString, should be equal to %s",
+		s2)
+	assert.Equal(s2bits.Len, c.LastString.Len, "Wrong len on LastString, should be %d", s2bits.Len)
+
+	assert.Equal(c.Strings.Len, uint64(len(stringsBits)), "String len should be %d, not %d",
+		uint64(len(stringsBits)), c.Strings.Len)
+
+	// Strings check
+	for i := uint64(0); i < c.Strings.Len; i++ {
+		bit, err := c.Strings.GetBit(i)
+		assert.Nil(err, "Cannot access bit %d. %s", i, err)
+		assert.Equal(bit, stringsBits[i], "Wrong bit at position %d. Found %t, expected %t",
+			i, bit, stringsBits[i])
+	}
+
+	// Starts check
+	for i := uint64(0); i < c.Starts.Len; i++ {
+		bit, err := c.Starts.GetBit(i)
+		assert.Nil(err, "Cannot access bit %d. %s", i, err)
+		assert.Equal(bit, startsBits[i], "Wrong bit at position %d. Found %t, expected %t",
+			i, bit, startsBits[i])
+	}
+
+	s2suffixLen, err := c.unaryToInt(getLengthInBit(s1) + 1)
+	assert.Nil(err, "Something goes wrong: %s", err)
+	assert.Equal(s2suffixLen, uint64(2), "Some bit are missing in Lenghts. Found %d, expected %d",
+		s2suffixLen, uint64(2))
 }
 
 func TestSetStartsWithOffset(t *testing.T) {
