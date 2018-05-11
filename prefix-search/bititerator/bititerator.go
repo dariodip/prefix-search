@@ -30,9 +30,11 @@ type StringToBitIterator interface {
 
 // NewStringToBitIterator creates a StringToBit iterator (of type StringToBitIterator)
 // and returns it.
-func NewStringToBitIterator(s string) *StringToBit {
+func NewStringToBitIterator(s string) StringToBitIterator {
 	stb := StringToBit{s, stringByteLen(s) - 1, []byte(s), 0, false}
-	return &stb
+	var stbi StringToBitIterator
+	stbi = &stb
+	return stbi
 }
 
 // stringByteLen returns the size in bytes of the string. Supports unicode strings
@@ -45,19 +47,19 @@ func (bt *StringToBit) Next() (bool, error) {
 	if !bt.HasNext() {
 		return false, errors.New("no more bits")
 	}
-	toRet := uint(bt.encodedString[bt.currentByte]) & (1<<bt.currentBit) == 1<<bt.currentBit
-	if bt.currentBit == 7 {  // we reached last bit, let's switch to the next byte
+	toRet := uint(bt.encodedString[bt.currentByte])&(1<<bt.currentBit) == 1<<bt.currentBit
+	if bt.currentBit == 7 { // we reached last bit, let's switch to the next byte
 		if bt.currentByte == 0 {
 			bt.isLast = true
 		}
 		bt.currentByte--
 	}
-	bt.currentBit = (bt.currentBit + 1) % 8  // cyclic increment
+	bt.currentBit = (bt.currentBit + 1) % 8 // cyclic increment
 	return toRet, nil
 
 }
 
 // HasNext returns true if the sequence has another bit.
 func (bt *StringToBit) HasNext() bool {
-	return  !bt.isLast
+	return !bt.isLast
 }
