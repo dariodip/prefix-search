@@ -1,10 +1,11 @@
-package stringcoding
+package bitdata
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
 	"github.com/golang-collections/go-datastructures/bitarray"
+	"prefix-search/prefix-search/bititerator"
 )
 
 // BitData type abstracts a string accessible as a sequence of bits;
@@ -16,13 +17,35 @@ type BitData struct {
 	Len uint64
 }
 
-func (s1 *BitData) String() string {
-	return fmt.Sprintf("type: %T, bits:%v, Len:%v", s1, s1.bits, s1.Len)
+// New returns a pointer to a new BitData structure of the specified size.
+func New(ba bitarray.BitArray, len uint64) *BitData {
+	return &BitData{ba, len}
 }
 
-// NewBitData returns a pointer to a new BitData structure at the specified size.
-func NewBitData(ba bitarray.BitArray, len uint64) *BitData { // TODO private in the package ?
-	return &BitData{ba, len}
+// Given a string 's', getBitData returns a pointer to a BitData
+// encoding the string s. If something has gone wrong, returns
+// a nil pointer and and error.
+func GetBitData(s string) (*BitData, error) {
+	var (
+		sBitLen = GetLengthInBit(s)                     // length in bit of the string
+		btdata  = New(bitarray.NewBitArray(sBitLen), 0) // empty BitData
+		bitit   = bititerator.NewStringToBitIterator(s) // BitIterator on the string s
+	)
+
+	for bitit.HasNext() {
+		bit, err := bitit.Next()
+		if err != nil {
+			panic(err)
+			return nil, err // something has gone wrong
+		}
+		btdata.AppendBit(bit)
+	}
+	return btdata, nil
+}
+
+// GeLengthInBit returns the length in bit of the string s.
+func GetLengthInBit(s string) uint64 {
+	return uint64(len([]byte(s)) * 8)
 }
 
 // GetBit returns true if the bit in position 'index' is 1, false otherwise.
@@ -31,7 +54,7 @@ func (s1 *BitData) GetBit(index uint64) (bool, error) {
 	return s1.bits.GetBit(index)
 }
 
-// TODO doc
+// AppendBits appends the bits of a BitData (s2) onto the s1 BitData.
 func (s1 *BitData) AppendBits(s2 *BitData) error {
 	for i := uint64(0); i < s2.Len; i++ { // for each bit in the current string
 		bit, err := s2.GetBit(i) // get the i-th bit in s2
@@ -46,7 +69,7 @@ func (s1 *BitData) AppendBits(s2 *BitData) error {
 	return nil
 }
 
-// TODO doc
+// AppendBits appends a bit given as a bool to the s1 BitData.
 func (s1 *BitData) AppendBit(bit bool) error {
 	if bit { // if the bit to append is 1
 		err := s1.bits.SetBit(s1.Len) // append it to the next unmarked bit
@@ -84,7 +107,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 		return nil, errors.New("cannot append to a non initialized BitData")
 	}
 	if s2.bits == nil || s2.Len == uint64(0) { // trying to find common prefix between a string and a void one
-		differentSuffix := NewBitData(bitarray.NewBitArray(s1.Len), 0)
+		differentSuffix := New(bitarray.NewBitArray(s1.Len), 0)
 		for i := uint64(0); i < s1.Len; i++ { // we must copy the first array!
 			bit, errGet := s1.GetBit(i)
 			if errGet != nil {
@@ -113,8 +136,8 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 	}
 
 	var (
-		suffixLen       = s2.Len - commonPrefixLen + 1                   // length of the different suffix
-		differentSuffix = NewBitData(bitarray.NewBitArray(suffixLen), 0) // init a new BitData to keep suffix
+		suffixLen       = s2.Len - commonPrefixLen + 1            // length of the different suffix
+		differentSuffix = New(bitarray.NewBitArray(suffixLen), 0) // init a new BitData to keep suffix
 	)
 	for i := uint64(0); i < suffixLen; i++ {
 		if bit, err := s2.GetBit(i); err == nil {
@@ -126,10 +149,10 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 	return differentSuffix, nil
 }
 
-// bitToByte returns a byte array in which each byte represents
+// BitToByte returns a byte array in which each byte represents
 // a character of the string at first stored as BitData.
 // If something has gone wrong it returns a nil array an an error.
-func (s1 *BitData) bitToByte() ([]byte, error) {
+func (s1 *BitData) BitToByte() ([]byte, error) {
 	if s1.Len%8 != 0 {
 		return nil, errors.New("bitdata should be a valid string")
 	}
@@ -155,12 +178,27 @@ func (s1 *BitData) bitToByte() ([]byte, error) {
 	return finalBytes, nil
 }
 
-// bitToByte returns a decoded string given a BitData.
+// BitToByte returns a decoded string given a BitData.
 // If something has gone wrong it returns a nil array an an error.
-func (s1 *BitData) bitToString() (string, error) {
-	bt, err := s1.bitToByte()
+func (s1 *BitData) BitToString() (string, error) {
+	bt, err := s1.BitToByte()
 	if err != nil {
 		return "", err
 	}
 	return bytes.NewBuffer(bt).String(), nil
+}
+
+// Given a slice of string, GetTotalBitCount returns the
+// total count of bits for each string in the slice.
+func GetTotalBitCount(strings []string) uint64 {
+	var totalBitLen uint64
+	for _, s := range strings {
+		totalBitLen += GetLengthInBit(s)
+	}
+
+	return totalBitLen
+}
+
+func (s1 *BitData) String() string {
+	return fmt.Sprintf("type: %T, bits:%v, Len:%v", s1, s1.bits, s1.Len)
 }
