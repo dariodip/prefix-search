@@ -199,6 +199,34 @@ func GetTotalBitCount(strings []string) uint64 {
 	return totalBitLen
 }
 
+// Select1(B,i) with 1 <= i <= n returns the position in B of the i-th occurrence of 1.
+func (s1 *BitData) Select1(i uint64) (uint64, error) {
+	var (
+		onesCount uint64 // number 1s found
+	)
+	// invalid i check
+	if i > s1.Len {
+		return uint64(0), errors.New("cannot find the i-th occurrence in an array whose length is less than i")
+	}
+	if i == uint64(0) {
+		return uint64(0), errors.New("i should be greater than 0")
+	}
+	// let's iterate on the array
+	for j := uint64(0); j < s1.Len; j++ {
+		if bit, err := s1.GetBit(j); err != nil {
+			if bit {
+				onesCount++
+			}
+		} else { // error == nil
+			return uint64(0), err
+		}
+		if onesCount == i { // found the i-th occurrence of 1
+			return j, nil
+		}
+	}
+	return uint64(0), errors.New("there are less than i 1s in the array")
+}
+
 func (s1 *BitData) String() string {
 	return fmt.Sprintf("type: %T, bits:%v, Len:%v", s1, s1.bits, s1.Len)
 }
