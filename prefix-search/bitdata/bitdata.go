@@ -204,13 +204,12 @@ func (s1 *BitData) Select1(i uint64) (uint64, error) {
 	var (
 		onesCount uint64 // number 1s found
 	)
-	// invalid i check
-	if i > s1.Len {
-		return uint64(0), errors.New("cannot find the i-th occurrence in an array whose length is less than i")
+
+	// assertion check on the index
+	if err := checkIndex(s1, i); err != nil {
+		return uint64(0), err
 	}
-	if i == uint64(0) {
-		return uint64(0), errors.New("i should be greater than 0")
-	}
+
 	// let's iterate on the array
 	for j := uint64(0); j < s1.Len; j++ {
 		if bit, err := s1.GetBit(j); err != nil {
@@ -225,6 +224,41 @@ func (s1 *BitData) Select1(i uint64) (uint64, error) {
 		}
 	}
 	return uint64(0), errors.New("there are less than i 1s in the array")
+}
+
+// Rank1(B,i) returns the number of 1s in the prefix B[1...i] aka B[0...i-1].
+func (s1 *BitData) Rank(i uint64) (uint64, error) {
+	var (
+		onesCount uint64 // number 1s found
+	)
+
+	// assertion check on the index
+	if err := checkIndex(s1, i); err != nil {
+		return uint64(0), err
+	}
+
+	// let's iterate on the array
+	for j := uint64(0); j < i; j++ {
+		if bit, err := s1.GetBit(j); err != nil {
+			if bit {
+				onesCount++
+			}
+		} else { // error == nil
+			return uint64(0), err
+		}
+	}
+	return onesCount, nil
+}
+
+func checkIndex(s1 *BitData, i uint64) error {
+	// invalid i check
+	if i > s1.Len {
+		return errors.New("i should not be greater than the length of the array")
+	}
+	if i == uint64(0) {
+		return errors.New("i should be greater than 0")
+	}
+	return nil
 }
 
 func (s1 *BitData) String() string {
