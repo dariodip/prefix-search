@@ -44,7 +44,11 @@ func New(strings []string, lenCalc func(uint64, uint64) uint64) *Coding {
 		NextLengthsIndex:   uint64(1),
 		LengthCalcFunction: lenCalc,
 	}
-	// TODO insert
+	for _, s := range strings {
+		if err := fc.add(s); err != nil {
+			panic(err)
+		}
+	}
 	return &fc
 }
 
