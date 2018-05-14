@@ -227,7 +227,7 @@ func (s1 *BitData) Select1(i uint64) (uint64, error) {
 }
 
 // Rank1(B,i) returns the number of 1s in the prefix B[1...i] aka B[0...i-1].
-func (s1 *BitData) Rank(i uint64) (uint64, error) {
+func (s1 *BitData) Rank1(i uint64) (uint64, error) {
 	var (
 		onesCount uint64 // number 1s found
 	)

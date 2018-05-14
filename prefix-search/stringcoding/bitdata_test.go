@@ -150,9 +150,11 @@ func TestGetDifferentSuffixWithDifferentLength(t *testing.T) {
 // Unit test in order to check out if the method bitToByte
 // works on a string of 4 characters
 func TestBitToByte(t *testing.T) {
-	a := assert.New(t)
 	const s = "ciao"
-	b, e := bitdata.GetBitData(s)
+	var (
+		a    = assert.New(t)
+		b, e = bitdata.GetBitData(s)
+	)
 	a.Nil(e)
 	a.Equal(uint64(4*8), b.Len)
 	bt, e := b.BitToByte()
@@ -164,12 +166,83 @@ func TestBitToByte(t *testing.T) {
 // Unit test in order to check out if the method bitToString
 // works on a string of 4 characters
 func TestBitToString(t *testing.T) {
-	a := assert.New(t)
 	const s = "ciao"
-	b, e := bitdata.GetBitData(s)
+	var (
+		a    = assert.New(t)
+		b, e = bitdata.GetBitData(s)
+	)
 	a.Nil(e)
 	a.Equal(uint64(4*8), b.Len)
 	sCheck, e := b.BitToString()
 	a.Nil(e)
 	a.Equal(s, sCheck)
+}
+
+func TestSelect1(t *testing.T) {
+	const (
+		s       = "ciao" // 01100011011010010110000101101111
+		sBitLen = 4 * 8
+		check1  = uint64(2)
+		check2  = uint64(7)
+	)
+	var (
+		bd, errBd = bitdata.GetBitData(s)
+		a         = assert.New(t)
+	)
+	if errBd != nil {
+		a.Fail(errBd.Error())
+	}
+	selectOne1, errSelect1 := bd.Select1(uint64(1))
+	if errSelect1 != nil {
+		a.Fail(errSelect1.Error())
+	}
+	a.Equal(check1, selectOne1, "select1(1) should be 2")
+
+	selectOne2, errSelect2 := bd.Select1(uint64(4))
+	if errSelect2 != nil {
+		a.Fail(errSelect2.Error())
+	}
+	a.Equal(check2, selectOne2, "select1(4) should be 7")
+
+	select1Zero, errSelect1Zero := bd.Select1(uint64(0))
+	a.Equal(uint64(0), select1Zero, "there should be an error so we have 0")
+	a.NotNil(errSelect1Zero, "error message should not be nil")
+
+	select133, errSelect133 := bd.Select1(uint64(33))
+	a.Equal(uint64(0), select133, "there should be an error so we have 0")
+	a.NotNil(errSelect133, "error message should not be nil")
+
+}
+
+func TestRank1(t *testing.T) {
+	const (
+		s       = "ciao" // 01100011011010010110000101101111
+		sBitLen = 4 * 8
+		check1  = uint64(2)
+		check2  = uint64(4)
+	)
+	var (
+		bd, errBd = bitdata.GetBitData(s)
+		a         = assert.New(t)
+	)
+	if errBd != nil {
+		a.Fail(errBd.Error())
+	}
+
+	rankOne1, errRankOne1 := bd.Rank1(uint64(2))
+	a.Nil(errRankOne1, "there should be no error")
+	a.Equal(check1, rankOne1, "rank1(2) should be 2")
+
+	rankOne2, errRankOne2 := bd.Rank1(uint64(7))
+	a.Nil(errRankOne2, "there should be no error")
+	a.Equal(check2, rankOne2, "rank1(7) should be 4")
+
+	rank1Zero, errRank1Zero := bd.Rank1(uint64(0))
+	a.Equal(uint64(0), rank1Zero, "there should be an error so we have 0")
+	a.NotNil(errRank1Zero, "error message should not be nil")
+
+	rank133, errRank133 := bd.Select1(uint64(33))
+	a.Equal(uint64(0), rank133, "there should be an error so we have 0")
+	a.NotNil(errRank133, "error message should not be nil")
+
 }
