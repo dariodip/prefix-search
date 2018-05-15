@@ -33,9 +33,7 @@ func TestAddAndGetUnaryLength(t *testing.T) {
 		expected1sCount = uint64(5)
 	)
 	var (
-		c = New([]string{"ciaos"}, func(u, u2 uint64) uint64 { // stub coding struct
-			return 0
-		})
+		c           = New([]string{"ciaos"})
 		onesCounter uint64      // counter of 1s
 		lastIndex   = uint64(1) // last index of the array
 	)
@@ -105,99 +103,137 @@ func TestGetLengthInBit(t *testing.T) {
 // by inserting 1 or 2 strings
 func TestCoding_Add(t *testing.T) {
 	const (
-		s1 = "cia"
-		s2 = "cic"
+		s1      = "cia"
+		s2      = "cicccc"
+		s3      = "c"
+		epsilon = 20 // c = 2.1
 	)
 
 	var (
-		a       = assert.New(t)
-		lenCalc = func(prefixLen, stringLen uint64) uint64 {
-			return stringLen - prefixLen
-		}
-		c           = New([]string{s1, s2}, lenCalc)
-		stringsBits = []bool{
+		a           = assert.New(t)
+		lprc        = NewLPRC([]string{s1, s2, s3}, epsilon)
+		stringsBits = []bool{ // expected Strings final state
 			true, false, false, false, false, true, true, false,
 			true, false, false, true, false, true, true, false,
 			true, true, false, false, false, true, true, false,
+			true, true, false, false, false, true, true, false,
+			true, true, false, false, false, true, true, false,
+			true, true, false, false, false, true, true, false,
 			true, true,
+			true, true, false, false, false, true, true, false,
 		}
 
-		startsBits = []bool{
-			true, false, false, false, false, false, false, false, false, false, false, false, false,
-			false, false, false, false, false, false, false, false, false, false, false, true, false,
+		startsBits = []bool{ // expected Starts final state
+			true, false, false, false, false, false, false, false,
+			false, false, false, false, false, false, false, false,
+			false, false, false, false, false, false, false, false,
+			true, false, false, false, false, false, false, false,
+			false, false, false, false, false, false, false, false,
+			false, false, false, false, false, false, false, false,
+			false, false,
+			true, false, false, false, false, false, false, false,
 		}
 	)
 
-	a.NotEqual(s1, s2, "The two test strings must not be equal")
+	a.NotEqual(s1, s2, s3, "The three test strings must not be equal")
 
-	c.add(s1)
-
+	err := lprc.add(s1, 0)
+	a.Nil(err, "Cannot add string %s. %s", s1, err)
 	// Strings and LastString check, since we have only one strings for now we can use getBitData
 	s1bits, err := bd.GetBitData(s1)
 	a.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s1, err)
-	a.Equal(s1bits, c.Strings, "Wrong conversion on Strings") // TODO
-	a.Equal(s1bits.Len, c.Strings.Len, "Wrong len on Strings")
 
-	a.Equal(s1bits, c.LastString, "Wrong conversion on LastString, should be equal to %s",
-		s1) // TODO
-	a.Equal(s1bits.Len, c.LastString.Len, "Wrong len on LastString, should be %d", s1bits.Len)
+	// Checking the behavior when we add the first strings
+	for i := uint64(0); i < lprc.coding.Strings.Len; i++ {
+		bit, err := lprc.coding.Strings.GetBit(i)
+		a.Nil(err, "Cannot access bit %d. %s", i, err)
+		expectedBit, err := s1bits.GetBit(i)
+		a.Nil(err, "Cannot access bit %d. %s", i, err)
+		a.Equal(bit, expectedBit, "Wrong bit at position %d. Found %t, expected %t",
+			i, bit, expectedBit)
+	}
+
+	a.Equal(s1bits.Len, lprc.coding.Strings.Len, "Wrong len on Strings")
+
+	a.Equal(s1bits, lprc.coding.LastString, "Wrong conversion on LastString, should be equal to %s", s1)
+	a.Equal(s1bits.Len, lprc.coding.LastString.Len, "Wrong len on LastString, should be %d", s1bits.Len)
 
 	// Starts check
-	bit, err := c.Starts.GetBit(0)
+	bit, err := lprc.coding.Starts.GetBit(0)
 	a.Nil(err, "Cannot access bit %d. %s", 0, err)
 	a.Equal(bit, true, "Wrong bit at position %d. Found %t, expected %t", 0, bit, true)
-	for i := uint64(1); i < c.Starts.Len; i++ {
-		bit, err := c.Starts.GetBit(i)
+	for i := uint64(1); i < lprc.coding.Starts.Len; i++ {
+		bit, err := lprc.coding.Starts.GetBit(i)
 		a.Nil(err, "Cannot access bit %d. %s", i, err)
 		a.Equal(bit, false, "Wrong bit at position %d. Found %t, expected %t", i, bit, false)
 	}
 
 	// Lenghts
-	s1len, err := c.unaryToInt(0)
+	s1len, err := lprc.coding.unaryToInt(0)
 	a.Nil(err, "Something goes wrong: %s", err)
 	a.Equal(s1len, bd.GetLengthInBit(s1), "Some bit are missing in Lenghts. Found %d, expected %d", s1len,
 		len(s1))
 
-	c.add(s2)
+	a.Equal(lprc.latestCompressedBitWritten, uint64(0), "The string should not be compressed")
+
+	// Now we check the insertion of more strings
+	err = lprc.add(s2, 1)
+	a.Nil(err, "Cannot add string %s. %s", s2, err)
 
 	// Check if lastString is now s2
 	s2bits, err := bd.GetBitData(s2)
 	a.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s1, err)
-	a.Equal(s2bits, c.LastString, "Wrong conversion on LastString, should be equal to %s",
+	a.Equal(s2bits, lprc.coding.LastString, "Wrong conversion on LastString, should be equal to %s",
 		s2)
-	a.Equal(s2bits.Len, c.LastString.Len, "Wrong len on LastString, should be %d", s2bits.Len)
+	a.Equal(s2bits.Len, lprc.coding.LastString.Len, "Wrong len on LastString, should be %d", s2bits.Len)
 
-	a.Equal(c.Strings.Len, uint64(len(stringsBits)), "String len should be %d, not %d",
-		uint64(len(stringsBits)), c.Strings.Len)
+	compressedS2, err := s1bits.GetDifferentSuffix(s2bits)
+	a.Nil(err, "Something goes wrong while generating the different suffix between %s and %s: %s",
+		s2, s1, err)
+	a.Equal(compressedS2.Len, lprc.latestCompressedBitWritten,
+		"wrong latest compressed bit written. Found %d, expected %d",
+		compressedS2.Len, lprc.latestCompressedBitWritten)
 
+	s2suffixLen, err := lprc.coding.unaryToInt(bd.GetLengthInBit(s1) + 1)
+	a.Nil(err, "Something goes wrong: %s", err)
+	a.Equal(s2suffixLen, uint64(26), "Some bit are missing in Lenghts. Found %d, expected %d",
+		s2suffixLen, uint64(26))
+
+	s3bits, err := bd.GetBitData(s3)
+	a.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s3, err)
+
+	// Due to the value of c, now s3 should be uncompressed even if it can in theory be completely compressed
+	err = lprc.add(s3, 2)
+	a.Nil(err, "Cannot add string %s. %s", s3, err)
+	a.Equal(s3bits, lprc.coding.LastString, "Wrong conversion on LastString, should be equal to %s", s3)
+	a.Equal(s3bits.Len, lprc.coding.LastString.Len, "Wrong len on LastString, should be %d", s3bits.Len)
+	a.Equal(lprc.latestCompressedBitWritten, uint64(0), "String %s should be uncompressed", s3)
+
+	s3len, err := lprc.coding.unaryToInt(bd.GetLengthInBit(s1) + 1 + s2suffixLen + 1)
+	a.Equal(s3len, s3bits.Len, "Wrong bit len for %s. Found %d, expected %d", s3, s3len, s3bits.Len)
+
+	// Check the structure final state
 	// Strings check
-	for i := uint64(0); i < c.Strings.Len; i++ {
-		bit, err := c.Strings.GetBit(i)
+	for i := uint64(0); i < lprc.coding.Strings.Len; i++ {
+		bit, err := lprc.coding.Strings.GetBit(i)
 		a.Nil(err, "Cannot access bit %d. %s", i, err)
 		a.Equal(bit, stringsBits[i], "Wrong bit at position %d. Found %t, expected %t",
 			i, bit, stringsBits[i])
 	}
 
 	// Starts check
-	for i := uint64(0); i < c.Starts.Len; i++ {
-		bit, err := c.Starts.GetBit(i)
+	for i := uint64(0); i < lprc.coding.Starts.Len; i++ {
+		bit, err := lprc.coding.Starts.GetBit(i)
 		a.Nil(err, "Cannot access bit %d. %s", i, err)
 		a.Equal(bit, startsBits[i], "Wrong bit at position %d. Found %t, expected %t",
 			i, bit, startsBits[i])
 	}
-
-	s2suffixLen, err := c.unaryToInt(bd.GetLengthInBit(s1) + 1)
-	a.Nil(err, "Something goes wrong: %s", err)
-	a.Equal(s2suffixLen, uint64(2), "Some bit are missing in Lenghts. Found %d, expected %d",
-		s2suffixLen, uint64(2))
 }
 
 func TestSetStartsWithOffset(t *testing.T) {
 	var (
-		a = assert.New(t)
-		c = New([]string{"ciao"}, func(len1, len2 uint64) uint64 {
-			return 0 // we don't need that function here, so we simply use a stub method
-		})
+		a            = assert.New(t)
+		c            = New([]string{"ciao"})
 		bitD         = bd.New(bitarray.NewBitArray(8), 0)
 		checkBit     = []bool{false, true, false}
 		expectedBits = []bool{true, false, false, true, false, false}

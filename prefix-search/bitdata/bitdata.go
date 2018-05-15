@@ -120,7 +120,8 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 		}
 		return s1, nil
 	}
-	for idx1 >= 0 && idx2 >= 0 { // we must keep both the indexes in order to avoid out of bound
+	// we must keep both the indexes in order to avoid out of bound
+	for {
 		bit1, e1 := s1.GetBit(idx1) // get bits in position idx1 (risp. idx2) on both strings
 		bit2, e2 := s2.GetBit(idx2)
 		if e1 != nil || e2 != nil { // something has gone wrong
@@ -130,6 +131,9 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 			commonPrefixLen++
 		} else {
 			break // bits are not still equal, we are in the different suffix
+		}
+		if idx1 == 0 || idx2 == 0 {
+			break  // no more bit to scan
 		}
 		idx1--
 		idx2--
