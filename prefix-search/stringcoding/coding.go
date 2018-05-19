@@ -1,5 +1,9 @@
 // stringcoding package provides an easy way to deal
 // with strings in a bit-to-bit fashion
+// Each compressed/uncompressed string will be represented in the structure in right to left order (from the
+// least significant bit to the most significant).
+// i.e: The list of two strings [cia, cio] (without loss of generality we suppose to work with characters instead
+//      bits), will be encoded as [aic|o] (the vertical bar here is simply used to divide the two encoded string)
 package stringcoding
 
 import (

@@ -6,6 +6,7 @@ import (
 	"errors"
 )
 
+// Bit stream in a right to left order (from the least significant bit to the most significant)
 type StringToBit struct {
 	// string (still decoded) on which iterate.
 	s string

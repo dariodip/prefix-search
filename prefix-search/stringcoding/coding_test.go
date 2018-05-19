@@ -168,10 +168,10 @@ func TestCoding_Add(t *testing.T) {
 		a.Equal(bit, false, "Wrong bit at position %d. Found %t, expected %t", i, bit, false)
 	}
 
-	// Lenghts
+	// Lengths
 	s1len, err := lprc.coding.unaryToInt(0)
 	a.Nil(err, "Something goes wrong: %s", err)
-	a.Equal(s1len, bd.GetLengthInBit(s1), "Some bit are missing in Lenghts. Found %d, expected %d", s1len,
+	a.Equal(s1len, bd.GetLengthInBit(s1), "Some bit are missing in Lengths. Found %d, expected %d", s1len,
 		len(s1))
 
 	a.Equal(lprc.latestCompressedBitWritten, uint64(0), "The string should not be compressed")
@@ -196,7 +196,7 @@ func TestCoding_Add(t *testing.T) {
 
 	s2suffixLen, err := lprc.coding.unaryToInt(bd.GetLengthInBit(s1) + 1)
 	a.Nil(err, "Something goes wrong: %s", err)
-	a.Equal(s2suffixLen, uint64(26), "Some bit are missing in Lenghts. Found %d, expected %d",
+	a.Equal(s2suffixLen, uint64(26), "Some bit are missing in Lengths. Found %d, expected %d",
 		s2suffixLen, uint64(26))
 
 	s3bits, err := bd.GetBitData(s3)
