@@ -1,6 +1,7 @@
 # Project Title
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/prefix-search/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
+[![Build Status](https://travis-ci.com/dariodip/prefix-search.svg?token=NZ9VK4sB4UsVShV1p8wD&branch=master)](https://travis-ci.com/dariodip/prefix-search)
 
 One Paragraph of project description goes here
 
