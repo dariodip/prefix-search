@@ -82,6 +82,34 @@ func (lprc *LPRC) add(s string, index uint64) error {
 	return nil
 }
 
+// Retrieval(u, l) returns the prefix of the string string(u) with length l.
+// So the returned prefix ends up in the edge (p(u), u).
+func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
+	var (
+		stringBuffer         = bd.New(bitarray.NewBitArray(l), 0) // let's create a buffer in order to store our prefix
+		uPosition, errSelect = lprc.coding.Starts.Select1(u)      // uPosition is the position of the u-th string
+	)
+	if errSelect != nil { // select has gone wrong
+		return "", errSelect
+	}
+	isCompressedStringU, errIsCompressed := lprc.isCompressed.GetBit(u) // check if our string is compressed (we hope no)
+	if errIsCompressed != nil {                                         // isCompressed has gone wrong
+		return "", errIsCompressed
+	}
+	if !isCompressedStringU { // our string is stored uncompressed
+		for i := uint64(0); i < l; i++ { // let's iterate for i = 0 up to l - 1 (l times)
+			lastBit, lastBitErr := lprc.coding.Strings.GetBit(uPosition + i) // take the i-th bit of string(u)
+			if lastBitErr != nil {                                           // getBit has gone wrong
+				return "", lastBitErr
+			}
+			stringBuffer.AppendBit(lastBit) // populate our buffer
+		}
+		return stringBuffer.BitToString() // return our buffer encoded as a string
+	} else {
+		panic("to implement") // TODO implement compressed case
+	}
+}
+
 func saveUncompressed(stringToAdd *bd.BitData, bdS *bd.BitData, lprc *LPRC) bool {
 	return stringToAdd.Len == bdS.Len || float64(lprc.latestCompressedBitWritten) > lprc.c*float64(bdS.Len)
 }
