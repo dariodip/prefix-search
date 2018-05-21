@@ -182,8 +182,8 @@ func TestSelect1(t *testing.T) {
 	const (
 		s       = "ciao" // 01100011011010010110000101101111
 		sBitLen = 4 * 8
-		check1  = uint64(2)
-		check2  = uint64(7)
+		check1  = uint64(0)
+		check2  = uint64(3)
 	)
 	var (
 		bd, errBd = bitdata.GetBitData(s)
@@ -233,9 +233,9 @@ func TestRank1(t *testing.T) {
 	a.Nil(errRankOne1, "there should be no error")
 	a.Equal(check1, rankOne1, "rank1(2) should be 2")
 
-	rankOne2, errRankOne2 := bd.Rank1(uint64(7))
+	rankOne2, errRankOne2 := bd.Rank1(uint64(4))
 	a.Nil(errRankOne2, "there should be no error")
-	a.Equal(check2, rankOne2, "rank1(7) should be 4")
+	a.Equal(check2, rankOne2, "rank1(4) should be 4")
 
 	rank1Zero, errRank1Zero := bd.Rank1(uint64(0))
 	a.Equal(uint64(0), rank1Zero, "there should be an error so we have 0")

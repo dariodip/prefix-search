@@ -133,7 +133,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 			break // bits are not still equal, we are in the different suffix
 		}
 		if idx1 == 0 || idx2 == 0 {
-			break  // no more bit to scan
+			break // no more bit to scan
 		}
 		idx1--
 		idx2--
@@ -216,7 +216,7 @@ func (s1 *BitData) Select1(i uint64) (uint64, error) {
 
 	// let's iterate on the array
 	for j := uint64(0); j < s1.Len; j++ {
-		if bit, err := s1.GetBit(j); err != nil {
+		if bit, err := s1.GetBit(j); err == nil {
 			if bit {
 				onesCount++
 			}
@@ -243,7 +243,7 @@ func (s1 *BitData) Rank1(i uint64) (uint64, error) {
 
 	// let's iterate on the array
 	for j := uint64(0); j < i; j++ {
-		if bit, err := s1.GetBit(j); err != nil {
+		if bit, err := s1.GetBit(j); err == nil {
 			if bit {
 				onesCount++
 			}
