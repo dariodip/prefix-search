@@ -2,7 +2,7 @@
 PKGS := $(shell go list ./... | grep -v /vendor)
 
 .PHONY: test
-test:
+test: install
 	go test $(PKGS)
 
 .PHONY: install
