@@ -5,10 +5,14 @@ PKGS := $(shell go list ./... | grep -v /vendor)
 test: lint
 	go test $(PKGS)
 
+.PHONY: install
+install:
+	go get -t ./...
+
 BIN_DIR := $(GOPATH)/bin
 GOMETALINTER := $(BIN_DIR)/gometalinter
 
-$(GOMETALINTER):
+$(GOMETALINTER): install
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install &> /dev/null
 
