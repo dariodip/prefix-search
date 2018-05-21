@@ -2,7 +2,6 @@ package bitdata
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"github.com/dariodip/prefix-search/prefix-search/bititerator"
 	"github.com/golang-collections/go-datastructures/bitarray"
@@ -36,7 +35,6 @@ func GetBitData(s string) (*BitData, error) {
 		bit, err := bitit.Next()
 		if err != nil {
 			panic(err)
-			return nil, err // something has gone wrong
 		}
 		btdata.AppendBit(bit)
 	}
@@ -85,7 +83,7 @@ func (s1 *BitData) AppendBit(bit bool) error {
 // It won't resize the structure so Len will be as before.
 func (s1 *BitData) SetBit(index uint64) error {
 	if index >= s1.Len {
-		return errors.New("index out of bound")
+		return ErrIndexOutOfBound
 	}
 	err := s1.bits.SetBit(index)
 	if err != nil {
@@ -104,7 +102,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 		idx2            = s2.Len // length in bit of the second "bitted" string
 	)
 	if s1.bits == nil {
-		return nil, errors.New("cannot append to a non initialized BitData")
+		return nil, ErrNotInitBitData
 	}
 	if s2.bits == nil || s2.Len == uint64(0) { // trying to find common prefix between a string and a void one
 		differentSuffix := New(bitarray.NewBitArray(s1.Len), 0)
@@ -125,7 +123,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 		bit1, e1 := s1.GetBit(idx1) // get bits in position idx1 (risp. idx2) on both strings
 		bit2, e2 := s2.GetBit(idx2)
 		if e1 != nil || e2 != nil { // something has gone wrong
-			return nil, errors.New("Cannot access bitarray in position: " + string(idx1))
+			return nil, &ErrInvalidPosition{idx1}
 		}
 		if bit1 == bit2 { // bits are still equal
 			commonPrefixLen++
@@ -158,7 +156,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 // If something has gone wrong it returns a nil array an an error.
 func (s1 *BitData) BitToByte() ([]byte, error) {
 	if s1.Len%8 != 0 {
-		return nil, errors.New("bitdata should be a valid string")
+		return nil, ErrInvalidString
 	}
 	var (
 		lenInBytes  = s1.Len / 8               // number of characters in the string
@@ -227,7 +225,7 @@ func (s1 *BitData) Select1(i uint64) (uint64, error) {
 			return j, nil
 		}
 	}
-	return uint64(0), errors.New("there are less than i 1s in the array")
+	return uint64(0), ErrLessThanIOnes
 }
 
 // Rank1(B,i) returns the number of 1s in the prefix B[1...i] aka B[0...i-1].
@@ -257,10 +255,10 @@ func (s1 *BitData) Rank1(i uint64) (uint64, error) {
 func checkIndex(s1 *BitData, i uint64) error {
 	// invalid i check
 	if i > s1.Len {
-		return errors.New("i should not be greater than the length of the array")
+		return ErrInvalidI
 	}
 	if i == uint64(0) {
-		return errors.New("i should be greater than 0")
+		return ErrZeroI
 	}
 	return nil
 }

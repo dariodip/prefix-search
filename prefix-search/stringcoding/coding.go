@@ -7,7 +7,6 @@
 package stringcoding
 
 import (
-	"errors"
 	"fmt"
 	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"github.com/golang-collections/go-datastructures/bitarray"
@@ -66,7 +65,7 @@ func (c *Coding) setStartsWithOffset(differentSuffix *bd.BitData) error {
 // to the Lengths bitdata.
 func (c *Coding) addUnaryLength(n uint64) error {
 	if c.Lengths == nil {
-		return errors.New("error in trying to add on a non initialized BitData")
+		return bd.ErrNotInitBitData
 	}
 	for i := uint64(0); i < n; i++ {
 		if err := c.Lengths.AppendBit(true); err != nil {
@@ -84,11 +83,11 @@ func (c *Coding) addUnaryLength(n uint64) error {
 // Given an index, returns the idx-th value of the unary array
 func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
 	if c.Lengths == nil {
-		return uint64(0), errors.New("error in trying to add on a non initialized BitData")
+		return uint64(0), bd.ErrNotInitBitData
 	}
 	if bit, err := c.Lengths.GetBit(idx); err == nil {
 		if bit && idx != uint64(0) {
-			return uint64(0), errors.New("index should point to a 0")
+			return uint64(0), ErrInvalidIndex
 		}
 	} else {
 		return uint64(0), err
