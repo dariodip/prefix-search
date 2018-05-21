@@ -9,8 +9,8 @@ package stringcoding
 import (
 	"errors"
 	"fmt"
+	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"github.com/golang-collections/go-datastructures/bitarray"
-	bd "prefix-search/prefix-search/bitdata"
 )
 
 type Coding struct {

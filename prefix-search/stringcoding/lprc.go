@@ -1,8 +1,8 @@
 package stringcoding
 
 import (
+	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"github.com/golang-collections/go-datastructures/bitarray"
-	bd "prefix-search/prefix-search/bitdata"
 )
 
 type LPRC struct {

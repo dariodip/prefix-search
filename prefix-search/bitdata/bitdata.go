@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/dariodip/prefix-search/prefix-search/bititerator"
 	"github.com/golang-collections/go-datastructures/bitarray"
-	"prefix-search/prefix-search/bititerator"
 )
 
 // BitData type abstracts a string accessible as a sequence of bits;

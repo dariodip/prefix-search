@@ -1,9 +1,9 @@
 package stringcoding
 
 import (
+	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"github.com/golang-collections/go-datastructures/bitarray"
 	"github.com/stretchr/testify/assert"
-	bd "prefix-search/prefix-search/bitdata"
 	"testing"
 )
 
