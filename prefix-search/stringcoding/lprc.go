@@ -67,7 +67,7 @@ func (lprc *LPRC) add(s string, index uint64) error {
 
 	// 4: append different suffix' length to Lengths
 	prefixLen := bdS.Len - stringToAdd.Len // get suffix length
-	errAppUL := coding.addUnaryLength(calcLen(prefixLen, bdS.Len))
+	errAppUL := coding.encodeEliasGamma(calcLen(prefixLen, bdS.Len))
 	if errAppUL != nil { // as above...
 		panic(errAppUL)
 	}

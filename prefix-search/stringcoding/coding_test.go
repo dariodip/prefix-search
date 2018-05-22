@@ -39,7 +39,7 @@ func TestAddAndGetUnaryLength(t *testing.T) {
 	)
 
 	t.Log("Add unary value")
-	err := c.addUnaryLength(n1)
+	err := c.encodeEliasGamma(n1)
 	a.Nil(err, "Error should be nil")
 	t.Log("Get lengths array")
 	lengthBitData := c.Lengths
@@ -58,7 +58,7 @@ func TestAddAndGetUnaryLength(t *testing.T) {
 	}
 	a.Equal(expected1sCount, onesCounter, "Array contains 5 ones")
 
-	checkUnaryToInt, err := c.unaryToInt(uint64(0))
+	checkUnaryToInt, err := c.decodeEliasGamma(uint64(0))
 	a.Nil(err, "Error should be nil")
 	a.Equal(expected1sCount, checkUnaryToInt, "Check unary to int should be 5")
 }
@@ -169,7 +169,7 @@ func TestCoding_Add(t *testing.T) {
 	}
 
 	// Lengths
-	s1len, err := lprc.coding.unaryToInt(0)
+	s1len, err := lprc.coding.decodeEliasGamma(0)
 	a.Nil(err, "Something goes wrong: %s", err)
 	a.Equal(s1len, bd.GetLengthInBit(s1), "Some bit are missing in Lengths. Found %d, expected %d", s1len,
 		len(s1))
@@ -194,7 +194,7 @@ func TestCoding_Add(t *testing.T) {
 		"wrong latest compressed bit written. Found %d, expected %d",
 		compressedS2.Len, lprc.latestCompressedBitWritten)
 
-	s2suffixLen, err := lprc.coding.unaryToInt(bd.GetLengthInBit(s1) + 1)
+	s2suffixLen, err := lprc.coding.decodeEliasGamma(bd.GetLengthInBit(s1) + 1)
 	a.Nil(err, "Something goes wrong: %s", err)
 	a.Equal(s2suffixLen, uint64(26), "Some bit are missing in Lengths. Found %d, expected %d",
 		s2suffixLen, uint64(26))
@@ -209,7 +209,7 @@ func TestCoding_Add(t *testing.T) {
 	a.Equal(s3bits.Len, lprc.coding.LastString.Len, "Wrong len on LastString, should be %d", s3bits.Len)
 	a.Equal(lprc.latestCompressedBitWritten, uint64(0), "String %s should be uncompressed", s3)
 
-	s3len, err := lprc.coding.unaryToInt(bd.GetLengthInBit(s1) + 1 + s2suffixLen + 1)
+	s3len, err := lprc.coding.decodeEliasGamma(bd.GetLengthInBit(s1) + 1 + s2suffixLen + 1)
 	a.Equal(s3len, s3bits.Len, "Wrong bit len for %s. Found %d, expected %d", s3, s3len, s3bits.Len)
 
 	// Check the structure final state

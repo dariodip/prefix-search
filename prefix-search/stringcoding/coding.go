@@ -37,12 +37,12 @@ type Coding struct {
 // that are in the array of strings.
 func New(strings []string) *Coding {
 	maxCapacity := bd.GetTotalBitCount(strings)
-	maxLengthCapacity := maxCapacity + uint64(len(strings)-1)
+	maxLengthCapacity := getEliasGammaLength(strings)
 	fc := Coding{
 		Strings:          bd.New(bitarray.NewBitArray(maxCapacity), 0),
 		Starts:           bd.New(bitarray.NewBitArray(maxCapacity), 0),
 		Lengths:          bd.New(bitarray.NewBitArray(maxLengthCapacity), 1),
-		NextLengthsIndex: uint64(1),
+		NextLengthsIndex: uint64(0),
 	}
 	return &fc
 }
@@ -59,55 +59,6 @@ func (c *Coding) setStartsWithOffset(differentSuffix *bd.BitData) error {
 	c.Starts.Len += differentSuffix.Len - 1
 
 	return nil
-}
-
-// addUnaryLength appends unary representation of the uint64 n
-// to the Lengths bitdata.
-func (c *Coding) addUnaryLength(n uint64) error {
-	if c.Lengths == nil {
-		return bd.ErrNotInitBitData
-	}
-	for i := uint64(0); i < n; i++ {
-		if err := c.Lengths.AppendBit(true); err != nil {
-			return err
-		}
-		c.NextLengthsIndex++
-	}
-	if err := c.Lengths.AppendBit(false); err != nil {
-		return err
-	}
-	c.NextLengthsIndex++
-	return nil
-}
-
-// Given an index, returns the idx-th value of the unary array
-func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
-	if c.Lengths == nil {
-		return uint64(0), bd.ErrNotInitBitData
-	}
-	if bit, err := c.Lengths.GetBit(idx); err == nil {
-		if bit && idx != uint64(0) {
-			return uint64(0), ErrInvalidIndex
-		}
-	} else {
-		return uint64(0), err
-	}
-
-	var val uint64
-	current := idx
-	for {
-		current++
-		if bit, err := c.Lengths.GetBit(current); err == nil {
-			if bit {
-				val++
-			} else {
-				break
-			}
-		} else {
-			return uint64(0), err
-		}
-	}
-	return val, nil
 }
 
 func (c *Coding) String() string {
