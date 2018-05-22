@@ -110,6 +110,50 @@ func TestCoding_decodeIthEliasGamma(t *testing.T) {
 	}
 }
 
+func TestCoding_extractNumFromBinary(t *testing.T) {
+	type fields struct {
+		Strings          *bd.BitData
+		Starts           *bd.BitData
+		Lengths          *bd.BitData
+		LastString       *bd.BitData
+		NextIndex        uint64
+		NextLengthsIndex uint64
+	}
+	type args struct {
+		currentIndex uint64
+		zeroCount    uint64
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    uint64
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Coding{
+				Strings:          tt.fields.Strings,
+				Starts:           tt.fields.Starts,
+				Lengths:          tt.fields.Lengths,
+				LastString:       tt.fields.LastString,
+				NextIndex:        tt.fields.NextIndex,
+				NextLengthsIndex: tt.fields.NextLengthsIndex,
+			}
+			got, err := c.extractNumFromBinary(tt.args.currentIndex, tt.args.zeroCount)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Coding.extractNumFromBinary() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Coding.extractNumFromBinary() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestCoding_eliasGammaZeroCount(t *testing.T) {
 	type fields struct {
 		Strings          *bd.BitData
@@ -127,7 +171,6 @@ func TestCoding_eliasGammaZeroCount(t *testing.T) {
 		fields  fields
 		args    args
 		want    uint64
-		want1   uint64
 		wantErr bool
 	}{
 	// TODO: Add test cases.
@@ -142,16 +185,13 @@ func TestCoding_eliasGammaZeroCount(t *testing.T) {
 				NextIndex:        tt.fields.NextIndex,
 				NextLengthsIndex: tt.fields.NextLengthsIndex,
 			}
-			got, got1, err := c.eliasGammaZeroCount(tt.args.idx)
+			got, err := c.eliasGammaZeroCount(tt.args.idx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Coding.eliasGammaZeroCount() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("Coding.eliasGammaZeroCount() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("Coding.eliasGammaZeroCount() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("Coding.eliasGammaZeroCount() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -175,7 +215,6 @@ func TestCoding_eliasGammaZeroCountLoop(t *testing.T) {
 		fields  fields
 		args    args
 		want    uint64
-		want1   uint64
 		wantErr bool
 	}{
 	// TODO: Add test cases.
@@ -190,16 +229,13 @@ func TestCoding_eliasGammaZeroCountLoop(t *testing.T) {
 				NextIndex:        tt.fields.NextIndex,
 				NextLengthsIndex: tt.fields.NextLengthsIndex,
 			}
-			got, got1, err := c.eliasGammaZeroCountLoop(tt.args.idx, tt.args.zeroCount)
+			got, err := c.eliasGammaZeroCountLoop(tt.args.idx, tt.args.zeroCount)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Coding.eliasGammaZeroCountLoop() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("Coding.eliasGammaZeroCountLoop() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("Coding.eliasGammaZeroCountLoop() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("Coding.eliasGammaZeroCountLoop() = %v, want %v", got, tt.want)
 			}
 		})
 	}

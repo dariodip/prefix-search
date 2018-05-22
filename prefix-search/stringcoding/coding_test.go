@@ -2,7 +2,6 @@ package stringcoding
 
 import (
 	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
-	"github.com/golang-collections/go-datastructures/bitarray"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -25,6 +24,7 @@ func TestGetBitDataSingleChar(t *testing.T) {
 	}
 }
 
+/*
 func TestAddAndGetUnaryLength(t *testing.T) {
 	a := assert.New(t)
 	const (
@@ -58,11 +58,11 @@ func TestAddAndGetUnaryLength(t *testing.T) {
 	}
 	a.Equal(expected1sCount, onesCounter, "Array contains 5 ones")
 
-	checkUnaryToInt, err := c.decodeEliasGamma(uint64(0))
+	checkUnaryToInt, err := c.decodeIthEliasGamma(uint64(0))
 	a.Nil(err, "Error should be nil")
 	a.Equal(expected1sCount, checkUnaryToInt, "Check unary to int should be 5")
 }
-
+*/
 // Unit test in order to check out if the method getBitData
 // works on a string of two characters
 func TestGetBitDataTwoChar(t *testing.T) {
