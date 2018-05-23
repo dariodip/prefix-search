@@ -41,7 +41,7 @@ func New(strings []string) *Coding {
 	fc := Coding{
 		Strings:          bd.New(bitarray.NewBitArray(maxCapacity), 0),
 		Starts:           bd.New(bitarray.NewBitArray(maxCapacity), 0),
-		Lengths:          bd.New(bitarray.NewBitArray(maxLengthCapacity), 1),
+		Lengths:          bd.New(bitarray.NewBitArray(maxLengthCapacity), 0),
 		NextLengthsIndex: uint64(0),
 	}
 	return &fc

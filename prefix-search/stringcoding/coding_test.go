@@ -2,6 +2,7 @@ package stringcoding
 
 import (
 	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
+	"github.com/golang-collections/go-datastructures/bitarray"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -169,10 +170,10 @@ func TestCoding_Add(t *testing.T) {
 	}
 
 	// Lengths
-	s1len, err := lprc.coding.decodeEliasGamma(0)
+	s1len, err := lprc.coding.decodeIthEliasGamma(0)
 	a.Nil(err, "Something goes wrong: %s", err)
 	a.Equal(s1len, bd.GetLengthInBit(s1), "Some bit are missing in Lengths. Found %d, expected %d", s1len,
-		len(s1))
+		bd.GetLengthInBit(s1))
 
 	a.Equal(lprc.latestCompressedBitWritten, uint64(0), "The string should not be compressed")
 
@@ -194,7 +195,7 @@ func TestCoding_Add(t *testing.T) {
 		"wrong latest compressed bit written. Found %d, expected %d",
 		compressedS2.Len, lprc.latestCompressedBitWritten)
 
-	s2suffixLen, err := lprc.coding.decodeEliasGamma(bd.GetLengthInBit(s1) + 1)
+	s2suffixLen, err := lprc.coding.decodeIthEliasGamma(1)
 	a.Nil(err, "Something goes wrong: %s", err)
 	a.Equal(s2suffixLen, uint64(26), "Some bit are missing in Lengths. Found %d, expected %d",
 		s2suffixLen, uint64(26))
@@ -209,7 +210,7 @@ func TestCoding_Add(t *testing.T) {
 	a.Equal(s3bits.Len, lprc.coding.LastString.Len, "Wrong len on LastString, should be %d", s3bits.Len)
 	a.Equal(lprc.latestCompressedBitWritten, uint64(0), "String %s should be uncompressed", s3)
 
-	s3len, err := lprc.coding.decodeEliasGamma(bd.GetLengthInBit(s1) + 1 + s2suffixLen + 1)
+	s3len, err := lprc.coding.decodeIthEliasGamma(2)
 	a.Equal(s3len, s3bits.Len, "Wrong bit len for %s. Found %d, expected %d", s3, s3len, s3bits.Len)
 
 	// Check the structure final state

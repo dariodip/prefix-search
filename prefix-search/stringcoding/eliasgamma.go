@@ -27,7 +27,7 @@ func (c *Coding) encodeEliasGamma(n uint64) error {
 		return bd.ErrZeroI
 	}
 	var (
-		bigN = uint64(math.Floor(math.Log(float64(n)))) // bigN is the first bit set to 1 in our n
+		bigN = uint64(math.Floor(math.Log2(float64(n)))) // bigN is the first bit set to 1 in our n
 	)
 	for i := uint64(0); i < bigN; i++ { // write 0 bigN times
 		if err := c.Lengths.AppendBit(false); err != nil {
@@ -37,11 +37,11 @@ func (c *Coding) encodeEliasGamma(n uint64) error {
 	}
 	// once we wrote our |_log_2 (n) _| 0s, we have to convert our n to binary
 	marker := uint64(1)                 // let's use a marker starting from 000...01
-	for i := uint64(1); i < bigN; i++ { // let's shift our marker to the left, marking increasingly higher order bits
+	for i := uint64(0); i < bigN; i++ { // let's shift our marker to the left, marking increasingly higher order bits
 		marker = marker << 1 // until we reach bigN (the last bit set to 1 in our n)
 	}
 	for marker > 0 { // while marker is marking another valid bit
-		if err := c.Lengths.AppendBit(marker&n == uint64(0)); err != nil { // let's add the i-th bit to our Lengths
+		if err := c.Lengths.AppendBit(marker&n != uint64(0)); err != nil { // let's add the i-th bit to our Lengths
 			panic(err) // we got an error and must panic everything (we don't know how many bits have been written)
 		}
 		marker = marker >> 1 // moving marker on the lower order bit
