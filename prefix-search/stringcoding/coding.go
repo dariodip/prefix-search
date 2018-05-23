@@ -37,7 +37,10 @@ type Coding struct {
 // that are in the array of strings.
 func New(strings []string) *Coding {
 	maxCapacity := bd.GetTotalBitCount(strings)
-	maxLengthCapacity := getEliasGammaLength(strings)
+	maxLengthCapacity, err := getEliasGammaLength(strings)
+	if err != nil {
+		panic("Cannot find the required capacity")
+	}
 	fc := Coding{
 		Strings:          bd.New(bitarray.NewBitArray(maxCapacity), 0),
 		Starts:           bd.New(bitarray.NewBitArray(maxCapacity), 0),

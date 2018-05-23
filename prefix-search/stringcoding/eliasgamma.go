@@ -3,17 +3,25 @@ package stringcoding
 import (
 	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"math"
+	"errors"
+)
+
+var (
+	ErrEmptyString = errors.New("Elias Gamma coding is undefined for the empty string")
 )
 
 // getEliasGammaLength computes the length of the Elias Gamma coding
 // on the string set.
 // TODO [optimization] GetLenthInBit called twice for each string
-func getEliasGammaLength(strings []string) uint64 {
+func getEliasGammaLength(strings []string) (uint64, error) {
 	count := uint64(0)
 	for _, s := range strings {
+		if len(s) == 0 {  // Elias Gamma length is undefined for the empty string
+			return uint64(0), ErrEmptyString
+		}
 		count += uint64(2*math.Floor(math.Log2(float64(bd.GetLengthInBit(s)))) + 1)
 	}
-	return count
+	return count, nil
 }
 
 // encodeEliasGamma appends Elias Gamma coding representation of the uint64 n
