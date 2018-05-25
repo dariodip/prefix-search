@@ -61,12 +61,17 @@ func (c *Coding) decodeIthEliasGamma(u uint64) (uint64, error) {
 	if c.Lengths == nil {
 		return uint64(0), bd.ErrNotInitBitData
 	}
+
+	if u == 0 { // the first string does not have an eliasgamma coded length
+		return 0, nil
+	}
+
 	if u >= c.Lengths.Len || u < uint64(0) {
 		return uint64(0), bd.ErrIndexOutOfBound
 	}
 
 	currentIndex := uint64(0) // current index in the array
-	currentNode := uint64(0)  // current node
+	currentNode := uint64(1)  // current node
 
 	for u != currentNode { // while we are not in the desired node
 		zeroCount, err := c.eliasGammaZeroCount(currentIndex) // count the total 0s in front of the coding

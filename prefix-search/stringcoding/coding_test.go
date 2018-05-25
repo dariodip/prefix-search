@@ -170,10 +170,9 @@ func TestCoding_Add(t *testing.T) {
 	}
 
 	// Lengths
-	s1len, err := lprc.coding.decodeIthEliasGamma(0)
+	s1val, err := lprc.coding.decodeIthEliasGamma(0)
 	a.Nil(err, "Something goes wrong: %s", err)
-	a.Equal(s1len, bd.GetLengthInBit(s1), "Some bit are missing in Lengths. Found %d, expected %d", s1len,
-		bd.GetLengthInBit(s1))
+	a.Equal(s1val, uint64(0), "Some bit are missing in Lengths. Found %d, expected %d", s1val, uint64(0))
 
 	a.Equal(lprc.latestCompressedBitWritten, uint64(0), "The string should not be compressed")
 
@@ -195,10 +194,10 @@ func TestCoding_Add(t *testing.T) {
 		"wrong latest compressed bit written. Found %d, expected %d",
 		compressedS2.Len, lprc.latestCompressedBitWritten)
 
-	s2suffixLen, err := lprc.coding.decodeIthEliasGamma(1)
+	s2val, err := lprc.coding.decodeIthEliasGamma(1)
 	a.Nil(err, "Something goes wrong: %s", err)
-	a.Equal(s2suffixLen, uint64(26), "Some bit are missing in Lengths. Found %d, expected %d",
-		s2suffixLen, uint64(26))
+	a.Equal(s2val, uint64(2), "Some bit are missing in Lengths. Found %d, expected %d",
+		s2val, uint64(2))
 
 	s3bits, err := bd.GetBitData(s3)
 	a.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s3, err)
@@ -210,8 +209,8 @@ func TestCoding_Add(t *testing.T) {
 	a.Equal(s3bits.Len, lprc.coding.LastString.Len, "Wrong len on LastString, should be %d", s3bits.Len)
 	a.Equal(lprc.latestCompressedBitWritten, uint64(0), "String %s should be uncompressed", s3)
 
-	s3len, err := lprc.coding.decodeIthEliasGamma(2)
-	a.Equal(s3len, s3bits.Len, "Wrong bit len for %s. Found %d, expected %d", s3, s3len, s3bits.Len)
+	s3val, err := lprc.coding.decodeIthEliasGamma(2)
+	a.Equal(s3val, s2bits.Len, "Wrong bit len for %s. Found %d, expected %d", s3, s3val, s2bits.Len)
 
 	// Check the structure final state
 	// Strings check

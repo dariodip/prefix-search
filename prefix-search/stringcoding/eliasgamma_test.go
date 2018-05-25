@@ -2,8 +2,6 @@ package stringcoding
 
 import (
 	"testing"
-
-	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 )
 
 func Test_getEliasGammaLength(t *testing.T) {
@@ -92,17 +90,17 @@ func TestCoding_decodeIthEliasGamma(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"first string length",
+			"first string value",
 			fields{[]string{"ciao", "cic"}, 20},
 			args{0},
-			bd.GetLengthInBit("ciao"),
+			uint64(0),
 			false,
 		},
 		{
-			"second string length",
+			"second string value",
 			fields{[]string{"ciao", "cic"}, 20},
 			args{1},
-			uint64(2),
+			uint64(10),
 			false,
 		},
 		{
@@ -149,17 +147,10 @@ func TestCoding_extractNumFromBinary(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"first string length",
+			"second string val",
 			fields{[]string{"ciao", "cic"}, 20},
-			args{5, 5},
-			bd.GetLengthInBit("ciao"),
-			false,
-		},
-		{
-			"second string length",
-			fields{[]string{"ciao", "cic"}, 20},
-			args{12, 1},
-			uint64(2),
+			args{3, 3},
+			uint64(10),
 			false,
 		},
 		{
@@ -205,17 +196,10 @@ func TestCoding_eliasGammaZeroCount(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"first string length",
+			"second string value",
 			fields{[]string{"ciao", "cic"}, 20},
 			args{0},
-			uint64(5),
-			false,
-		},
-		{
-			"second string length",
-			fields{[]string{"ciao", "cic"}, 20},
-			args{11},
-			uint64(1),
+			uint64(3),
 			false,
 		},
 		{
