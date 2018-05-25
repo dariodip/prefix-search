@@ -49,6 +49,9 @@ func GetLengthInBit(s string) uint64 {
 // GetBit returns true if the bit in position 'index' is 1, false otherwise.
 // It returns an error if something has gone wrong
 func (s1 *BitData) GetBit(index uint64) (bool, error) {
+	if index >= s1.Len {
+		return false, ErrIndexOutOfBound
+	}
 	return s1.bits.GetBit(index)
 }
 
@@ -98,8 +101,8 @@ func (s1 *BitData) SetBit(index uint64) error {
 func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 	var (
 		commonPrefixLen uint64   // length of the common prefix
-		idx1            = s1.Len // length in bit of the first "bitted" string
-		idx2            = s2.Len // length in bit of the second "bitted" string
+		idx1            = s1.Len - 1 // length in bit of the first "bitted" string
+		idx2            = s2.Len - 1// length in bit of the second "bitted" string
 	)
 	if s1.bits == nil {
 		return nil, ErrNotInitBitData
@@ -138,7 +141,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 	}
 
 	var (
-		suffixLen       = s2.Len - commonPrefixLen + 1            // length of the different suffix
+		suffixLen       = s2.Len - commonPrefixLen           // length of the different suffix
 		differentSuffix = New(bitarray.NewBitArray(suffixLen), 0) // init a new BitData to keep suffix
 	)
 	for i := uint64(0); i < suffixLen; i++ {
