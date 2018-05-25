@@ -25,45 +25,6 @@ func TestGetBitDataSingleChar(t *testing.T) {
 	}
 }
 
-/*
-func TestAddAndGetUnaryLength(t *testing.T) {
-	a := assert.New(t)
-	const (
-		n1              = uint64(5)         // length to set
-		expectedLength  = uint64(1 + 5 + 1) // first 0 + 5 * '1' + last 0
-		expected1sCount = uint64(5)
-	)
-	var (
-		c           = New([]string{"ciaos"})
-		onesCounter uint64      // counter of 1s
-		lastIndex   = uint64(1) // last index of the array
-	)
-
-	t.Log("Add unary value")
-	err := c.encodeEliasGamma(n1)
-	a.Nil(err, "Error should be nil")
-	t.Log("Get lengths array")
-	lengthBitData := c.Lengths
-	a.NotNil(lengthBitData, "Lengths array should not be nil")
-	a.Equal(expectedLength, lengthBitData.Len, "Len value should be 6 (5 + 1)")
-	a.Equal(expectedLength, c.NextLengthsIndex, "NextLengthsIndex should be 6")
-	for lastIndex >= 0 {
-		bit, err := lengthBitData.GetBit(lastIndex)
-		a.Nil(err, "Error should be nil")
-		if !bit {
-			break
-		} else {
-			onesCounter++
-		}
-		lastIndex++
-	}
-	a.Equal(expected1sCount, onesCounter, "Array contains 5 ones")
-
-	checkUnaryToInt, err := c.decodeIthEliasGamma(uint64(0))
-	a.Nil(err, "Error should be nil")
-	a.Equal(expected1sCount, checkUnaryToInt, "Check unary to int should be 5")
-}
-*/
 // Unit test in order to check out if the method getBitData
 // works on a string of two characters
 func TestGetBitDataTwoChar(t *testing.T) {
@@ -134,6 +95,8 @@ func TestCoding_Add(t *testing.T) {
 			false, false,
 			true, false, false, false, false, false, false, false,
 		}
+
+		isCompressedBits = []bool{false, true, false}
 	)
 
 	a.NotEqual(s1, s2, s3, "The three test strings must not be equal")
@@ -227,6 +190,14 @@ func TestCoding_Add(t *testing.T) {
 		a.Nil(err, "Cannot access bit %d. %s", i, err)
 		a.Equal(bit, startsBits[i], "Wrong bit at position %d. Found %t, expected %t",
 			i, bit, startsBits[i])
+	}
+
+	// isCompressed check
+	for i := uint64(0); i < lprc.isCompressed.Len; i++ {
+		isCompressed, err := lprc.isCompressed.GetBit(i)
+		a.Nil(err, "Cannot access bit %d. %s", i, err)
+		a.Equal(isCompressed, isCompressedBits[i], "Wrong bit at position %d. Found %t, expected %t",
+			i, isCompressed, isCompressedBits[i])
 	}
 }
 

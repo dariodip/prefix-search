@@ -20,8 +20,8 @@ type Coding struct {
 	// set to 1 marks the first bit of each of those suffixes
 	// in the aforementioned array (Strings).
 	Starts *bd.BitData
-	// Lengths encodes in unary the length of the shared prefixes
-	// between consecutive strings.
+	// Lengths encodes a value associated to each string in strings.
+	// The value depends from the particular compression scheme used
 	Lengths *bd.BitData
 	// LastString contains the last processed string as a sequence
 	// of bit. It can be used for a more efficient processing of the

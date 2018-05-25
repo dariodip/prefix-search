@@ -55,7 +55,8 @@ func (lprc *LPRC) add(s string, index uint64) error {
 	if saveUncompressed {                                        // we have to save our string uncompressed
 		stringToAdd = bdS                           // so the string to save is the full string
 		lprc.latestCompressedBitWritten = uint64(0) // compressed bit written is now 0
-		if err := lprc.isCompressed.SetBit(index); err != nil {
+	} else {
+		if err := lprc.isCompressed.SetBit(index); err != nil { // We can compress s
 			return err
 		}
 	}
@@ -67,10 +68,13 @@ func (lprc *LPRC) add(s string, index uint64) error {
 
 	// 4: append different suffix' length to Lengths
 	prefixLen := bdS.Len - stringToAdd.Len // get suffix length
-	errAppUL := coding.encodeEliasGamma(calcLen(prefixLen, bdS.Len))
-	if errAppUL != nil { // as above...
-		panic(errAppUL)
+	if coding.LastString != nil {
+		errAppUL := coding.encodeEliasGamma(calcLen(prefixLen, coding.LastString.Len))
+		if errAppUL != nil { // as above...
+			panic(errAppUL)
+		}
 	}
+
 	errSetSWO := coding.setStartsWithOffset(stringToAdd) // 5: set the bit of the next string in the Starts array
 	if errSetSWO != nil {
 		panic(errSetSWO)
