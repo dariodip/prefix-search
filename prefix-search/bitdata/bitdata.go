@@ -101,8 +101,8 @@ func (s1 *BitData) SetBit(index uint64) error {
 func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 	var (
 		commonPrefixLen uint64   // length of the common prefix
-		idx1            = s1.Len - 1 // length in bit of the first "bitted" string
-		idx2            = s2.Len - 1// length in bit of the second "bitted" string
+		idx1            = s1.Len - 1 // last bit of the first "bitted" string
+		idx2            = s2.Len - 1 // last bit of the second "bitted" string
 	)
 	if s1.bits == nil {
 		return nil, ErrNotInitBitData

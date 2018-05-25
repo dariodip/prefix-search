@@ -43,11 +43,8 @@ func (c *Coding) encodeEliasGamma(n uint64) error {
 		}
 		c.NextLengthsIndex++
 	}
-	// once we wrote our |_log_2 (n) _| 0s, we have to convert our n to binary
-	marker := uint64(1)                 // let's use a marker starting from 000...01
-	for i := uint64(0); i < bigN; i++ { // let's shift our marker to the left, marking increasingly higher order bits
-		marker = marker << 1 // until we reach bigN (the last bit set to 1 in our n)
-	}
+	// once we wrote our |_log_2 (n) _| 0s, we have to convert our n to binary. Let's use a marker
+	marker := uint64(1) << bigN // marker has 1 only in the position bigN
 	for marker > 0 { // while marker is marking another valid bit
 		if err := c.Lengths.AppendBit(marker&n != uint64(0)); err != nil { // let's add the i-th bit to our Lengths
 			panic(err) // we got an error and must panic everything (we don't know how many bits have been written)
@@ -90,13 +87,10 @@ func (c *Coding) decodeIthEliasGamma(u uint64) (uint64, error) {
 
 func (c *Coding) extractNumFromBinary(currentIndex uint64, zeroCount uint64) (uint64, error) {
 	var (
-		marker = uint64(1)    // 000...01
+		marker = uint64(1) << zeroCount    // marker has 1 only in the position zeroCount
 		n      = uint64(0)    // 000...00
 		index  = currentIndex // index of Lengths in which we start
 	)
-	for i := uint64(0); i < zeroCount; i++ { // marker has 1 only in the position zeroCount
-		marker = marker << 1
-	}
 
 	for marker > 0 { // marker has still a bit set to 1
 		bit, err := c.Lengths.GetBit(index) // find the bit in Lengths bitdata
