@@ -36,6 +36,7 @@ func calcLen(prefixLen, stringLen uint64) uint64 {
 func (lprc *LPRC) add(s string, index uint64) error {
 	coding := lprc.coding // extracting our coding data structure
 
+	s = s + string("\x00")
 	bdS, errGbd := bd.GetBitData(s) // 1: convert string s to a bitdata bdS
 	if errGbd != nil {
 		return errGbd

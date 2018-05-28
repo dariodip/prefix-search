@@ -1,6 +1,7 @@
 package stringcoding
 
 import (
+	"fmt"
 	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"github.com/golang-collections/go-datastructures/bitarray"
 	"github.com/stretchr/testify/assert"
@@ -75,25 +76,35 @@ func TestCoding_Add(t *testing.T) {
 		a           = assert.New(t)
 		lprc        = NewLPRC([]string{s1, s2, s3}, epsilon)
 		stringsBits = []bool{ // expected Strings final state
-			true, false, false, false, false, true, true, false,
-			true, false, false, true, false, true, true, false,
-			true, true, false, false, false, true, true, false,
-			true, true, false, false, false, true, true, false,
-			true, true, false, false, false, true, true, false,
-			true, true, false, false, false, true, true, false,
-			true, true,
-			true, true, false, false, false, true, true, false,
+			false, false, false, false, false, false, false, false, // null char
+			true, false, false, false, false, true, true, false, // a
+			true, false, false, true, false, true, true, false, // i
+			true, true, false, false, false, true, true, false, // c
+
+			false, false, false, false, false, false, false, false, // null char
+			true, true, false, false, false, true, true, false, // c
+			true, true, false, false, false, true, true, false, // c
+			true, true, false, false, false, true, true, false, // c
+			true, true, // remaining bits of c - a
+
+			false, false, false, false, false, false, false, false, // null char of the last c
+			true, true, false, false, false, true, true, false, // last c uncompressed
 		}
+		// nb in this example we didn't care about the lexicographic order of the strings
+		// in order the achieve an instance in which te last byte was uncompressed
 
 		startsBits = []bool{ // expected Starts final state
-			true, false, false, false, false, false, false, false,
-			false, false, false, false, false, false, false, false,
-			false, false, false, false, false, false, false, false,
-			true, false, false, false, false, false, false, false,
-			false, false, false, false, false, false, false, false,
-			false, false, false, false, false, false, false, false,
-			false, false,
-			true, false, false, false, false, false, false, false,
+			true, false, false, false, false, false, false, false, // x01
+			false, false, false, false, false, false, false, false, // x00
+			false, false, false, false, false, false, false, false, // x00
+			false, false, false, false, false, false, false, false, // x00
+			true, false, false, false, false, false, false, false, // x01
+			false, false, false, false, false, false, false, false, // x00
+			false, false, false, false, false, false, false, false, // x00
+			false, false, false, false, false, false, false, false, // x00
+			false, false, // 00
+			true, false, false, false, false, false, false, false, // x01
+			false, false, false, false, false, false, false, false, // \
 		}
 
 		isCompressedBits = []bool{false, true, false}
@@ -104,7 +115,7 @@ func TestCoding_Add(t *testing.T) {
 	err := lprc.add(s1, 0)
 	a.Nil(err, "Cannot add string %s. %s", s1, err)
 	// Strings and LastString check, since we have only one strings for now we can use getBitData
-	s1bits, err := bd.GetBitData(s1)
+	s1bits, err := bd.GetBitData(s1 + string("\x00"))
 	a.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s1, err)
 
 	// Checking the behavior when we add the first strings
@@ -144,13 +155,16 @@ func TestCoding_Add(t *testing.T) {
 	a.Nil(err, "Cannot add string %s. %s", s2, err)
 
 	// Check if lastString is now s2
-	s2bits, err := bd.GetBitData(s2)
+	s2bits, err := bd.GetBitData(s2 + string("\x00"))
 	a.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s1, err)
 	a.Equal(s2bits, lprc.coding.LastString, "Wrong conversion on LastString, should be equal to %s",
 		s2)
 	a.Equal(s2bits.Len, lprc.coding.LastString.Len, "Wrong len on LastString, should be %d", s2bits.Len)
+	fmt.Println(s1bits)
+	fmt.Println(s2bits)
 
 	compressedS2, err := s1bits.GetDifferentSuffix(s2bits)
+	fmt.Println(compressedS2)
 	a.Nil(err, "Something goes wrong while generating the different suffix between %s and %s: %s",
 		s2, s1, err)
 	a.Equal(compressedS2.Len, lprc.latestCompressedBitWritten,
@@ -159,10 +173,10 @@ func TestCoding_Add(t *testing.T) {
 
 	s2val, err := lprc.coding.decodeIthEliasGamma(1)
 	a.Nil(err, "Something goes wrong: %s", err)
-	a.Equal(s2val, uint64(2), "Some bit are missing in Lengths. Found %d, expected %d",
-		s2val, uint64(2))
+	a.Equal(s2val, uint64(8+2), "Some bit are missing in Lengths. Found %d, expected %d",
+		s2val, uint64(8+2))
 
-	s3bits, err := bd.GetBitData(s3)
+	s3bits, err := bd.GetBitData(s3 + string("\x00"))
 	a.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s3, err)
 
 	// Due to the value of c, now s3 should be uncompressed even if it can in theory be completely compressed

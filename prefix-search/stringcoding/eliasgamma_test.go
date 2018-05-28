@@ -23,7 +23,7 @@ func Test_getEliasGammaLength(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getEliasGammaLength(tt.args.strings);
+			got, err := getEliasGammaLength(tt.args.strings)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Coding.getEliasGammaLength() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -100,7 +100,7 @@ func TestCoding_decodeIthEliasGamma(t *testing.T) {
 			"second string value",
 			fields{[]string{"ciao", "cic"}, 20},
 			args{1},
-			uint64(10),
+			uint64(18),
 			false,
 		},
 		{
@@ -150,7 +150,7 @@ func TestCoding_extractNumFromBinary(t *testing.T) {
 			"second string val",
 			fields{[]string{"ciao", "cic"}, 20},
 			args{3, 3},
-			uint64(10),
+			uint64(18),
 			false,
 		},
 		{
@@ -199,7 +199,7 @@ func TestCoding_eliasGammaZeroCount(t *testing.T) {
 			"second string value",
 			fields{[]string{"ciao", "cic"}, 20},
 			args{0},
-			uint64(3),
+			uint64(4),
 			false,
 		},
 		{

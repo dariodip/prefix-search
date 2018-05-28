@@ -100,7 +100,7 @@ func (s1 *BitData) SetBit(index uint64) error {
 // If something goes wrong, returns a nil pointer and an error.
 func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 	var (
-		commonPrefixLen uint64   // length of the common prefix
+		commonPrefixLen uint64       // length of the common prefix
 		idx1            = s1.Len - 1 // last bit of the first "bitted" string
 		idx2            = s2.Len - 1 // last bit of the second "bitted" string
 	)
@@ -141,7 +141,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 	}
 
 	var (
-		suffixLen       = s2.Len - commonPrefixLen           // length of the different suffix
+		suffixLen       = s2.Len - commonPrefixLen                // length of the different suffix
 		differentSuffix = New(bitarray.NewBitArray(suffixLen), 0) // init a new BitData to keep suffix
 	)
 	for i := uint64(0); i < suffixLen; i++ {
@@ -267,5 +267,17 @@ func checkIndex(s1 *BitData, i uint64) error {
 }
 
 func (s1 *BitData) String() string {
-	return fmt.Sprintf("type: %T, bits:%v, Len:%v", s1, s1.bits, s1.Len)
+	s := ""
+	for i := s1.Len - 1; i >= uint64(0); i-- {
+		if bit, err := s1.GetBit(i); err != nil {
+			return err.Error() + " in String()"
+		} else {
+			if bit {
+				s += "1"
+			} else {
+				s += "0"
+			}
+		}
+	}
+	return fmt.Sprintf("type: %T, bits:%v, Len:%v, readableBitData:%s", s1, s1.bits, s1.Len, s)
 }
