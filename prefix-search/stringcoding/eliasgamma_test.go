@@ -149,7 +149,7 @@ func TestCoding_extractNumFromBinary(t *testing.T) {
 		{
 			"second string val",
 			fields{[]string{"ciao", "cic"}, 20},
-			args{3, 3},
+			args{4, 4},
 			uint64(18),
 			false,
 		},

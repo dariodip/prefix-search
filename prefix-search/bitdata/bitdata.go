@@ -268,8 +268,10 @@ func checkIndex(s1 *BitData, i uint64) error {
 
 func (s1 *BitData) String() string {
 	s := ""
-	for i := s1.Len - 1; i >= uint64(0); i-- {
+	i := s1.Len - 1
+	for {
 		if bit, err := s1.GetBit(i); err != nil {
+			fmt.Println(i)
 			return err.Error() + " in String()"
 		} else {
 			if bit {
@@ -278,6 +280,11 @@ func (s1 *BitData) String() string {
 				s += "0"
 			}
 		}
+
+		if i == 0 {
+			break
+		}
+		i--
 	}
 	return fmt.Sprintf("type: %T, bits:%v, Len:%v, readableBitData:%s", s1, s1.bits, s1.Len, s)
 }

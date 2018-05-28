@@ -1,7 +1,6 @@
 package stringcoding
 
 import (
-	"fmt"
 	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"github.com/golang-collections/go-datastructures/bitarray"
 	"github.com/stretchr/testify/assert"
@@ -160,11 +159,8 @@ func TestCoding_Add(t *testing.T) {
 	a.Equal(s2bits, lprc.coding.LastString, "Wrong conversion on LastString, should be equal to %s",
 		s2)
 	a.Equal(s2bits.Len, lprc.coding.LastString.Len, "Wrong len on LastString, should be %d", s2bits.Len)
-	fmt.Println(s1bits)
-	fmt.Println(s2bits)
 
 	compressedS2, err := s1bits.GetDifferentSuffix(s2bits)
-	fmt.Println(compressedS2)
 	a.Nil(err, "Something goes wrong while generating the different suffix between %s and %s: %s",
 		s2, s1, err)
 	a.Equal(compressedS2.Len, lprc.latestCompressedBitWritten,
