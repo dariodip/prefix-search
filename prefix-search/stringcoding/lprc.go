@@ -129,6 +129,7 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 		if err != nil {
 			panic(err)
 		}
+
 		for i := vPosition + 1; i <= u; i++ {
 			li, err := lprc.coding.decodeIthEliasGamma(i) // li is the length of the ith string
 			if err != nil {
@@ -160,9 +161,9 @@ func (lprc *LPRC) getLengthInStrings(i uint64) (uint64, error) {
 	}
 	var startPositionSuccI uint64
 	if (i + 1) == uint64(len(lprc.strings)) {
-		startPositionSuccI = lprc.coding.Starts.Len - 1
+		startPositionSuccI = lprc.coding.Starts.Len // u is the last string memorized!
 	} else {
-		startPositionSuccI, err = lprc.coding.Starts.Select1(i + 1 + 1)
+		startPositionSuccI, err = lprc.coding.Starts.Select1(i + 1 + 1) // We need to now where the next string starts
 		if err != nil {
 			return uint64(0), err
 		}
@@ -174,22 +175,35 @@ func (lprc *LPRC) getLengthInStrings(i uint64) (uint64, error) {
 func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, ni uint64) error {
 	var uPosition uint64
 	if (u + 1) == uint64(len(lprc.strings)) {
-		uPosition = lprc.coding.Strings.Len - 1
+		uPosition = lprc.coding.Strings.Len // u is the last string memorized!
 	} else {
 		var err error
-		uPosition, err = lprc.coding.Starts.Select1(u + 1 + 1)
+		uPosition, err = lprc.coding.Starts.Select1(u + 1 + 1) // We need to now where the next string starts
 		if err != nil {
 			return err
 		}
 	}
-	uPosition = uPosition - 1 - ni
-	for i := uint64(0); i < l; i++ { // let's iterate for i = 0 up to l - 1 (l times)
+	uPosition = uPosition - 1           // The most significant bits are at the end
+	for i := uint64(0); i < l-ni; i++ { // let's iterate for i = 0 up to l - 1 (l times)
 		lastBit, lastBitErr := lprc.coding.Strings.GetBit(uPosition - i) // take the i-th bit of string(u)
 		if lastBitErr != nil {                                           // getBit has gone wrong
 			return lastBitErr
 		}
+
+		uncompressed, err := lprc.isUncompressed.GetBit(u)
+		if err != nil {
+			return err
+		}
+		var indexToUpdate uint64
+		if uncompressed {
+			indexToUpdate = l - 1 - i // We are populating the buffer
+		} else {
+			indexToUpdate = i // We are updating the buffer, so we need to update only the most significant bits
+		}
 		if lastBit {
-			stringBuffer.SetBit(l - 1 - i)
+			stringBuffer.SetBit(indexToUpdate)
+		} else {
+			stringBuffer.ClearBit(indexToUpdate)
 		}
 	}
 	return nil

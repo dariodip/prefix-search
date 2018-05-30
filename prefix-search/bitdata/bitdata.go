@@ -95,6 +95,19 @@ func (s1 *BitData) SetBit(index uint64) error {
 	return nil
 }
 
+// SetBit reset a bit in the BitData if the index is not out of bound.
+// It won't resize the structure so Len will be as before.
+func (s1 *BitData) ClearBit(index uint64) error {
+	if index >= s1.Len {
+		return ErrIndexOutOfBound
+	}
+	err := s1.bits.ClearBit(index)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetDifferentSuffix, given another pointer to a BitData, returns a new
 // BitData containing the suffix that is not equal between the two BitDatas.
 // If something goes wrong, returns a nil pointer and an error.
