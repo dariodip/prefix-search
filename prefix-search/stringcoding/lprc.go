@@ -129,11 +129,7 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 		if err != nil {
 			panic(err)
 		}
-		for i := v + 1; i < u; i++ {
-			startI, err := lprc.coding.Starts.Select1(i + 1)
-			if err != nil {
-				return "", err
-			}
+		for i := vPosition + 1; i <= u; i++ {
 			li, err := lprc.coding.decodeIthEliasGamma(i) // li is the length of the ith string
 			if err != nil {
 				return "", err
@@ -147,16 +143,10 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 			if ni >= l {
 				continue // first l bits are the same, so we can skip
 			} else {
-				for j := ni + 1; j < l; j++ {
-					bit, err := lprc.coding.Strings.GetBit(startI)
-					if err != nil {
-						return "", err
-					}
-					if bit {
-						stringBuffer.SetBit(j)
-					}
-					startI++
-				} // end for
+				err := lprc.populateBuffer(stringBuffer, l, i, ni)
+				if err != nil {
+					return "", err
+				}
 			} // end else
 		} // end for
 	} //end else !isUncompressedStringU
@@ -168,20 +158,31 @@ func (lprc *LPRC) getLengthInStrings(i uint64) (uint64, error) {
 	if err != nil {
 		return uint64(0), err
 	}
-	startPositionSuccI, err := lprc.coding.Starts.Select1(i + 1 + 1)
-	if err != nil {
-		return uint64(0), err
+	var startPositionSuccI uint64
+	if (i + 1) == uint64(len(lprc.strings)) {
+		startPositionSuccI = lprc.coding.Starts.Len - 1
+	} else {
+		startPositionSuccI, err = lprc.coding.Starts.Select1(i + 1 + 1)
+		if err != nil {
+			return uint64(0), err
+		}
 	}
+
 	return startPositionSuccI - startPositionI, nil
 }
 
 func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, ni uint64) error {
-
-	uPosition, err := lprc.coding.Starts.Select1(u + 1 + 1)
-	uPosition = uPosition - 1 - ni
-	if err != nil {
-		return err
+	var uPosition uint64
+	if (u + 1) == uint64(len(lprc.strings)) {
+		uPosition = lprc.coding.Strings.Len - 1
+	} else {
+		var err error
+		uPosition, err = lprc.coding.Starts.Select1(u + 1 + 1)
+		if err != nil {
+			return err
+		}
 	}
+	uPosition = uPosition - 1 - ni
 	for i := uint64(0); i < l; i++ { // let's iterate for i = 0 up to l - 1 (l times)
 		lastBit, lastBitErr := lprc.coding.Strings.GetBit(uPosition - i) // take the i-th bit of string(u)
 		if lastBitErr != nil {                                           // getBit has gone wrong

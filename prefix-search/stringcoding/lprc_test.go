@@ -37,7 +37,7 @@ func TestLPRC_Retrieval(t *testing.T) {
 			"First uncompressed string",
 			fields{
 				70,
-				[]string{"ciao", "cic", "cuz"},
+				[]string{"caso", "cic", "cuz"},
 			},
 			args{
 				uint64(2),
