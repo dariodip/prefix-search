@@ -106,7 +106,7 @@ func TestCoding_Add(t *testing.T) {
 			false, false, false, false, false, false, false, false, // \
 		}
 
-		isCompressedBits = []bool{false, true, false}
+		isUncompressedBits = []bool{true, false, true}
 	)
 
 	a.NotEqual(s1, s2, s3, "The three test strings must not be equal")
@@ -202,12 +202,12 @@ func TestCoding_Add(t *testing.T) {
 			i, bit, startsBits[i])
 	}
 
-	// isCompressed check
-	for i := uint64(0); i < lprc.isCompressed.Len; i++ {
-		isCompressed, err := lprc.isCompressed.GetBit(i)
+	// isUncompressed check
+	for i := uint64(0); i < lprc.isUncompressed.Len; i++ {
+		isCompressed, err := lprc.isUncompressed.GetBit(i)
 		a.Nil(err, "Cannot access bit %d. %s", i, err)
-		a.Equal(isCompressed, isCompressedBits[i], "Wrong bit at position %d. Found %t, expected %t",
-			i, isCompressed, isCompressedBits[i])
+		a.Equal(isCompressed, isUncompressedBits[i], "Wrong bit at position %d. Found %t, expected %t",
+			i, isCompressed, isUncompressedBits[i])
 	}
 }
 
