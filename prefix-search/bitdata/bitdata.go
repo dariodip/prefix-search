@@ -197,13 +197,47 @@ func (s1 *BitData) BitToByte() ([]byte, error) {
 }
 
 // BitToByte returns a decoded string given a BitData.
-// If something has gone wrong it returns a nil array an an error.
+// If something has gone wrong it returns a nil string and an error.
 func (s1 *BitData) BitToString() (string, error) {
 	bt, err := s1.BitToByte()
 	if err != nil {
 		return "", err
 	}
 	return bytes.NewBuffer(bt).String(), nil
+}
+
+// BitToByte returns a decoded and trimmed string given a BitData.
+// If something has gone wrong it returns a nil string and an error.
+func (s1 *BitData) BitToTrimmedString() (string, error) {
+	var (
+		bt, err = s1.BitToByte()
+	)
+	for bt[0] == byte(0) {
+		bt = bt[1:]
+	}
+	r := len(bt) - 1
+	for bt[r] == byte(0) {
+		bt = bt[:r]
+		r = len(bt) - 1
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return bytes.NewBuffer(bt).String(), nil
+}
+
+// BitToByte returns a decoded string of length l bits given a BitData.
+// If something has gone wrong it returns a nil string and an error.
+func (s1 *BitData) BitToStringOfLengthL(l uint64) (string, error) {
+	var (
+		bytesCount = l / 8 // l as bytes
+		bt, err    = s1.BitToByte()
+	)
+	if err != nil {
+		return "", err
+	}
+	return bytes.NewBuffer(bt[:bytesCount]).String(), nil
 }
 
 // Given a slice of string, GetTotalBitCount returns the

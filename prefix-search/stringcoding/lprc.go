@@ -92,16 +92,19 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 
 	var (
 		stringBuffer = bd.New(bitarray.NewBitArray(l), l) // let's create a buffer in order to store our prefix
-		_, errSelect = lprc.coding.Starts.Select1(u + 1)  // uPosition is the position of the u-th string TODO
 	)
-	if errSelect != nil { // select has gone wrong
-		return "", errSelect
-	}
 	isUncompressedStringU, errIsCompressed := lprc.isUncompressed.GetBit(u) // check if our string is compressed (we hope no)
 	if errIsCompressed != nil {                                             // isUncompressed has gone wrong
 		return "", errIsCompressed
 	}
 	if isUncompressedStringU { // our string is stored uncompressed
+		if ll, err := lprc.getLengthInStrings(u); err != nil {
+			return "", err
+		} else { // no error
+			if l > ll { // l is greater than our string
+				l = ll // we can only return a string as big as our string
+			}
+		} // end else
 		err := lprc.populateBuffer(stringBuffer, l, u, uint64(0)) // we get the first l bits of that string
 		if err != nil {
 			panic(err)
@@ -138,6 +141,11 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 			ni := lengthStringV - li                   // this is the length of the common prefix between string(p(i)) and string(i)
 			lengthI, err := lprc.getLengthInStrings(i) // length of the suffix of string(i) in Strings
 			lengthStringV = lengthI + ni               // total length of string(i)
+			if i == u {                                // we found the last string
+				if lengthStringV < l { // we are asking for more bit than the string has
+					l = lengthStringV // l should be the total length of the string
+				}
+			}
 			if err != nil {
 				return "", err
 			}
@@ -151,7 +159,7 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 			} // end else
 		} // end for
 	} //end else !isUncompressedStringU
-	return stringBuffer.BitToString()
+	return stringBuffer.BitToTrimmedString()
 }
 
 func (lprc *LPRC) getLengthInStrings(i uint64) (uint64, error) {

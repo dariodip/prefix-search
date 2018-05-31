@@ -137,6 +137,19 @@ func TestLPRC_Retrieval(t *testing.T) {
 			"",
 			true,
 		},
+		{
+			"10) l greater than |Si|",
+			fields{
+				1,
+				[]string{"casotto", "cisonostatierrori", "cuz"},
+			},
+			args{
+				uint64(2),
+				uint64(128),
+			},
+			"cuz",
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -151,6 +164,7 @@ func TestLPRC_Retrieval(t *testing.T) {
 				return
 			}
 			if got != tt.want {
+				t.Errorf("len(got)= %d", len(got))
 				t.Errorf("LPRC.Retrieval() = %v, want %v", got, tt.want)
 			}
 		})
