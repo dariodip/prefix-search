@@ -86,7 +86,7 @@ func TestLPRC_Retrieval(t *testing.T) {
 			false,
 		},
 		{
-			"6) Third uncompressed string (different suffixes)",
+			"6) Third uncompressed string (different prefixes)",
 			fields{
 				1,
 				[]string{"casotto", "visonostatierrori", "zuz"}, //ucu
