@@ -1,90 +1,43 @@
-# Project Title
+# Prefix Search
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/prefix-search/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 [![Build Status](https://travis-ci.com/dariodip/prefix-search.svg?token=NZ9VK4sB4UsVShV1p8wD&branch=master)](https://travis-ci.com/dariodip/prefix-search)
 
-One Paragraph of project description goes here
+prefix-search is an implementation of the [paper](https://link.springer.com/chapter/10.1007/978-3-642-40450-4_40) *Compressed Cache-Oblivious String B-tree* of Paolo Ferragina and Rossano Venturini. We developed the proposed algorithm (LPRC) and a new one (PSRC), giving you the ability to deal with online dictionaries of strings in an unspecified order.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+With these instructions you will get a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
+You need make and [Golang](https://golang.org/) installed in order to run all the command listed next. 
 
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
-
+You need [Python 3](https://www.python.org/) if you want to run our scripts.
 ### Installing
 
-A step by step series of examples that tell you have to get a development env running
-
-Say what the step will be
-
+In order to install all the required dependencies, in the project root directory run the following:
 ```
-Give the example
+make install
 ```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
+All the test are built using the package [testing](https://golang.org/pkg/testing/).
 
-### Break down into end to end tests
-
-Explain what these tests test and why
-
+To execute all our tests, run the following
 ```
-Give an example
+make test
 ```
 
-### And coding style tests
+## Scripts
 
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
+In our project we have implemented some utility scripts:
+* **resources/generate_dataset.py** - create word datasets of different size from the single dataset **words.txt**
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+* [Golang](https://golang.org/)
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+* [**Dario Di Pasquale**](https://github.com/dariodip)
+* [**Mattia Tomeo**](https://github.com/mattiatomeo)
