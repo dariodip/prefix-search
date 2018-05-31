@@ -102,7 +102,7 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 		return "", errIsCompressed
 	}
 	if isUncompressedStringU { // our string is stored uncompressed
-		err := lprc.populateBuffer(stringBuffer, l, u, uint64(0))
+		err := lprc.populateBuffer(stringBuffer, l, u, uint64(0)) // we get the first l bits of that string
 		if err != nil {
 			panic(err)
 		}
@@ -113,38 +113,38 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 			return "", err
 		}
 		vPosition, err := lprc.isUncompressed.Select1(v) // extract the position of the v-th string
-		if err != nil {
+		if err != nil {                                  // i.e. the first uncompressed string before u
 			return "", err
 		}
-		vStarts, err := lprc.coding.Starts.Select1(vPosition + 1) // give me the position of the selectUth 1 i.e. the string v
+		vStarts, err := lprc.coding.Starts.Select1(vPosition + 1) // give me the position where the string v starts in Strings
 		if err != nil {                                           // where v is the first uncompressed string before u
 			return "", err
 		}
-		vNextStarts, err := lprc.coding.Starts.Select1(vPosition + 1 + 1) // give me the position of the selectUth+1 1
-		if err != nil {
+		vNextStarts, err := lprc.coding.Starts.Select1(vPosition + 1 + 1) // give me the position of the string next to v
+		if err != nil {                                                   // in order to extract the size of string(v)
 			return "", err
 		}
-		lengthStringV := vNextStarts - vStarts
-		err = lprc.populateBuffer(stringBuffer, l, vPosition, 0)
+		lengthStringV := vNextStarts - vStarts                   // that's the length of string(v)
+		err = lprc.populateBuffer(stringBuffer, l, vPosition, 0) // insert the first l bits of string(v) in the buffer
 		if err != nil {
 			panic(err)
 		}
 
-		for i := vPosition + 1; i <= u; i++ {
-			li, err := lprc.coding.decodeIthEliasGamma(i) // li is the length of the ith string
-			if err != nil {
+		for i := vPosition + 1; i <= u; i++ { // for each string i between v and u (we follow the path on the trie in dfs order)
+			li, err := lprc.coding.decodeIthEliasGamma(i) // li is the number of bits to remove in string(p(i)) in order to
+			if err != nil {                               // obtain the prefix for string(i)
 				return "", err
 			}
-			ni := lengthStringV - li                   // this is the length of the common prefix between Si-1 and Si
-			lengthI, err := lprc.getLengthInStrings(i) // length of the suffix in Strings
-			lengthStringV = lengthI + ni               // total length of Si
+			ni := lengthStringV - li                   // this is the length of the common prefix between string(p(i)) and string(i)
+			lengthI, err := lprc.getLengthInStrings(i) // length of the suffix of string(i) in Strings
+			lengthStringV = lengthI + ni               // total length of string(i)
 			if err != nil {
 				return "", err
 			}
 			if ni >= l {
 				continue // first l bits are the same, so we can skip
 			} else {
-				err := lprc.populateBuffer(stringBuffer, l, i, ni)
+				err := lprc.populateBuffer(stringBuffer, l, i, ni) // populate the buffer
 				if err != nil {
 					return "", err
 				}

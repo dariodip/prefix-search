@@ -21,10 +21,10 @@ func TestLPRC_Retrieval(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"First uncompressed string",
+			"1) First uncompressed string",
 			fields{
 				70,
-				[]string{"ciao", "cic", "cuz"},
+				[]string{"ciao", "cic", "cuz"}, //ucc
 			},
 			args{
 				uint64(0),
@@ -34,10 +34,10 @@ func TestLPRC_Retrieval(t *testing.T) {
 			false,
 		},
 		{
-			"First uncompressed string",
+			"2) Third compressed string",
 			fields{
 				70,
-				[]string{"caso", "cic", "cuz"},
+				[]string{"caso", "cic", "cuz"}, //ucc
 			},
 			args{
 				uint64(2),
@@ -45,6 +45,97 @@ func TestLPRC_Retrieval(t *testing.T) {
 			},
 			"cu",
 			false,
+		},
+		{
+			"3) Different prefix for all",
+			fields{
+				70,
+				[]string{"asso", "basso", "dasso"}, //ucc
+			},
+			args{
+				uint64(2),
+				uint64(16),
+			},
+			"da",
+			false,
+		},
+		{
+			"4) Different prefix for all",
+			fields{
+				1,
+				[]string{"asso", "basso", "dasso"}, //ucc
+			},
+			args{
+				uint64(0),
+				uint64(16),
+			},
+			"as",
+			false,
+		},
+		{
+			"5) Second compressed string followed by uncompressed",
+			fields{
+				1,
+				[]string{"casotto", "cisonostatierrori", "cuz"}, //ucu
+			},
+			args{
+				uint64(1),
+				uint64(16),
+			},
+			"ci",
+			false,
+		},
+		{
+			"6) Third uncompressed string (different suffixes)",
+			fields{
+				1,
+				[]string{"casotto", "visonostatierrori", "zuz"}, //ucu
+			},
+			args{
+				uint64(2),
+				uint64(16),
+			},
+			"zu",
+			false,
+		},
+		{
+			"7) Third uncompressed string",
+			fields{
+				1,
+				[]string{"casotto", "cisonostatierrori", "cuz"}, //ucu
+			},
+			args{
+				uint64(2),
+				uint64(24),
+			},
+			"cuz",
+			false,
+		},
+		{
+			"8) Forth compressed string, uncompressed not first",
+			fields{
+				10,
+				[]string{"casotto", "cisonostatimoltierrori", "codice", "console", "cuz"}, //ucucc
+			},
+			args{
+				uint64(3),
+				uint64(16),
+			},
+			"co",
+			false,
+		},
+		{
+			"9) Index out of bound",
+			fields{
+				1,
+				[]string{"casotto", "cisonostatierrori", "cuz"},
+			},
+			args{
+				uint64(10),
+				uint64(16),
+			},
+			"",
+			true,
 		},
 	}
 	for _, tt := range tests {
