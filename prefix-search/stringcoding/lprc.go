@@ -185,21 +185,15 @@ func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, n
 	}
 	uPosition = uPosition - 1           // The most significant bits are at the end
 	for i := uint64(0); i < l-ni; i++ { // let's iterate for i = 0 up to l - 1 (l times)
+		// We start from the most significant bits
 		lastBit, lastBitErr := lprc.coding.Strings.GetBit(uPosition - i) // take the i-th bit of string(u)
 		if lastBitErr != nil {                                           // getBit has gone wrong
 			return lastBitErr
 		}
 
-		uncompressed, err := lprc.isUncompressed.GetBit(u)
-		if err != nil {
-			return err
-		}
-		var indexToUpdate uint64
-		if uncompressed {
-			indexToUpdate = l - 1 - i // We are populating the buffer
-		} else {
-			indexToUpdate = i // We are updating the buffer, so we need to update only the most significant bits
-		}
+		// The last ((l - 1) - ni) bits in stringBuffer are the number of most significant bit in common between
+		// the two consecutive strings
+		indexToUpdate := ((l - 1) - ni) - i
 		if lastBit {
 			stringBuffer.SetBit(indexToUpdate)
 		} else {
