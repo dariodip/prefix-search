@@ -6,8 +6,14 @@ import (
 	"os"
 )
 
+var (
+	VERSION         string
+	inputFile       string
+	inputPrefixFile string
+)
+
 var rootCmd = &cobra.Command{
-	Use:   "prefsearch",
+	Use:   "prefix-search",
 	Short: "Prefix Search: A tool that implements Prefix Search algorithm based on a cache oblivious string b-tree",
 	Long: `Prefix Search: A tool that implements Prefix Search algorithm based on a cache oblivious string b-tree.  
 It is an implementation of the paper Compressed Cache-Oblivious String B-tree of Paolo Ferragina and Rossano Venturini.
@@ -17,7 +23,10 @@ Check out our GitHub repository for more info: https://github.com/dariodip/prefi
 	Run: run,
 }
 
-func Execute() {
+func Execute(version string) {
+
+	VERSION = version
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
