@@ -7,7 +7,6 @@
 package stringcoding
 
 import (
-	"errors"
 	"fmt"
 	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"github.com/golang-collections/go-datastructures/bitarray"
@@ -21,8 +20,8 @@ type Coding struct {
 	// set to 1 marks the first bit of each of those suffixes
 	// in the aforementioned array (Strings).
 	Starts *bd.BitData
-	// Lengths encodes in unary the length of the shared prefixes
-	// between consecutive strings.
+	// Lengths encodes a value associated to each string in strings.
+	// The value depends from the particular compression scheme used
 	Lengths *bd.BitData
 	// LastString contains the last processed string as a sequence
 	// of bit. It can be used for a more efficient processing of the
@@ -38,12 +37,15 @@ type Coding struct {
 // that are in the array of strings.
 func New(strings []string) *Coding {
 	maxCapacity := bd.GetTotalBitCount(strings)
-	maxLengthCapacity := maxCapacity + uint64(len(strings)-1)
+	maxLengthCapacity, err := getEliasGammaLength(strings)
+	if err != nil {
+		panic("Cannot find the required capacity")
+	}
 	fc := Coding{
 		Strings:          bd.New(bitarray.NewBitArray(maxCapacity), 0),
 		Starts:           bd.New(bitarray.NewBitArray(maxCapacity), 0),
-		Lengths:          bd.New(bitarray.NewBitArray(maxLengthCapacity), 1),
-		NextLengthsIndex: uint64(1),
+		Lengths:          bd.New(bitarray.NewBitArray(maxLengthCapacity), 0),
+		NextLengthsIndex: uint64(0),
 	}
 	return &fc
 }
@@ -62,56 +64,8 @@ func (c *Coding) setStartsWithOffset(differentSuffix *bd.BitData) error {
 	return nil
 }
 
-// addUnaryLength appends unary representation of the uint64 n
-// to the Lengths bitdata.
-func (c *Coding) addUnaryLength(n uint64) error {
-	if c.Lengths == nil {
-		return errors.New("error in trying to add on a non initialized BitData")
-	}
-	for i := uint64(0); i < n; i++ {
-		if err := c.Lengths.AppendBit(true); err != nil {
-			return err
-		}
-		c.NextLengthsIndex++
-	}
-	if err := c.Lengths.AppendBit(false); err != nil {
-		return err
-	}
-	c.NextLengthsIndex++
-	return nil
-}
-
-// Given an index, returns the idx-th value of the unary array
-func (c *Coding) unaryToInt(idx uint64) (uint64, error) {
-	if c.Lengths == nil {
-		return uint64(0), errors.New("error in trying to add on a non initialized BitData")
-	}
-	if bit, err := c.Lengths.GetBit(idx); err == nil {
-		if bit && idx != uint64(0) {
-			return uint64(0), errors.New("index should point to a 0")
-		}
-	} else {
-		return uint64(0), err
-	}
-
-	var val uint64
-	current := idx
-	for {
-		current++
-		if bit, err := c.Lengths.GetBit(current); err == nil {
-			if bit {
-				val++
-			} else {
-				break
-			}
-		} else {
-			return uint64(0), err
-		}
-	}
-	return val, nil
-}
-
 func (c *Coding) String() string {
-	return fmt.Sprintf("type:%T, Strings: %v, Starts:%v, Lengths:%v, LastString:%v, NextIndex:%v, NextLengthsIndex:%v",
+	return fmt.Sprintf(`type:%T, \nStrings: %v, \nStarts:%v, \nLengths:%v, \nLastString:%v, \nNextIndex:%v, 
+\nNextLengthsIndex:%v`,
 		c, c.Strings, c.Starts, c.Lengths, c.LastString, c.NextIndex, c.NextLengthsIndex)
 }

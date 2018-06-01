@@ -6,6 +6,10 @@ import (
 	"errors"
 )
 
+var (
+	ErrNoMoreBits = errors.New("no more bits")
+)
+
 // Bit stream in a right to left order (from the least significant bit to the most significant)
 type StringToBit struct {
 	// string (still decoded) on which iterate.
@@ -46,7 +50,7 @@ func stringByteLen(s string) uint {
 // Next returns true if the next bit is 1, false otherwise.
 func (bt *StringToBit) Next() (bool, error) {
 	if !bt.HasNext() {
-		return false, errors.New("no more bits")
+		return false, ErrNoMoreBits
 	}
 	toRet := uint(bt.encodedString[bt.currentByte])&(1<<bt.currentBit) == 1<<bt.currentBit
 	if bt.currentBit == 7 { // we reached last bit, let's switch to the next byte

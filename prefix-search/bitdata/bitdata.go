@@ -2,7 +2,6 @@ package bitdata
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"github.com/dariodip/prefix-search/prefix-search/bititerator"
 	"github.com/golang-collections/go-datastructures/bitarray"
@@ -36,7 +35,6 @@ func GetBitData(s string) (*BitData, error) {
 		bit, err := bitit.Next()
 		if err != nil {
 			panic(err)
-			return nil, err // something has gone wrong
 		}
 		btdata.AppendBit(bit)
 	}
@@ -51,6 +49,9 @@ func GetLengthInBit(s string) uint64 {
 // GetBit returns true if the bit in position 'index' is 1, false otherwise.
 // It returns an error if something has gone wrong
 func (s1 *BitData) GetBit(index uint64) (bool, error) {
+	if index >= s1.Len {
+		return false, ErrIndexOutOfBound
+	}
 	return s1.bits.GetBit(index)
 }
 
@@ -85,9 +86,22 @@ func (s1 *BitData) AppendBit(bit bool) error {
 // It won't resize the structure so Len will be as before.
 func (s1 *BitData) SetBit(index uint64) error {
 	if index >= s1.Len {
-		return errors.New("index out of bound")
+		return ErrIndexOutOfBound
 	}
 	err := s1.bits.SetBit(index)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// SetBit reset a bit in the BitData if the index is not out of bound.
+// It won't resize the structure so Len will be as before.
+func (s1 *BitData) ClearBit(index uint64) error {
+	if index >= s1.Len {
+		return ErrIndexOutOfBound
+	}
+	err := s1.bits.ClearBit(index)
 	if err != nil {
 		return err
 	}
@@ -99,12 +113,12 @@ func (s1 *BitData) SetBit(index uint64) error {
 // If something goes wrong, returns a nil pointer and an error.
 func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 	var (
-		commonPrefixLen uint64   // length of the common prefix
-		idx1            = s1.Len // length in bit of the first "bitted" string
-		idx2            = s2.Len // length in bit of the second "bitted" string
+		commonPrefixLen uint64       // length of the common prefix
+		idx1            = s1.Len - 1 // last bit of the first "bitted" string
+		idx2            = s2.Len - 1 // last bit of the second "bitted" string
 	)
 	if s1.bits == nil {
-		return nil, errors.New("cannot append to a non initialized BitData")
+		return nil, ErrNotInitBitData
 	}
 	if s2.bits == nil || s2.Len == uint64(0) { // trying to find common prefix between a string and a void one
 		differentSuffix := New(bitarray.NewBitArray(s1.Len), 0)
@@ -125,7 +139,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 		bit1, e1 := s1.GetBit(idx1) // get bits in position idx1 (risp. idx2) on both strings
 		bit2, e2 := s2.GetBit(idx2)
 		if e1 != nil || e2 != nil { // something has gone wrong
-			return nil, errors.New("Cannot access bitarray in position: " + string(idx1))
+			return nil, &ErrInvalidPosition{idx1}
 		}
 		if bit1 == bit2 { // bits are still equal
 			commonPrefixLen++
@@ -140,7 +154,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 	}
 
 	var (
-		suffixLen       = s2.Len - commonPrefixLen + 1            // length of the different suffix
+		suffixLen       = s2.Len - commonPrefixLen                // length of the different suffix
 		differentSuffix = New(bitarray.NewBitArray(suffixLen), 0) // init a new BitData to keep suffix
 	)
 	for i := uint64(0); i < suffixLen; i++ {
@@ -158,7 +172,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 // If something has gone wrong it returns a nil array an an error.
 func (s1 *BitData) BitToByte() ([]byte, error) {
 	if s1.Len%8 != 0 {
-		return nil, errors.New("bitdata should be a valid string")
+		return nil, ErrInvalidString
 	}
 	var (
 		lenInBytes  = s1.Len / 8               // number of characters in the string
@@ -183,13 +197,47 @@ func (s1 *BitData) BitToByte() ([]byte, error) {
 }
 
 // BitToByte returns a decoded string given a BitData.
-// If something has gone wrong it returns a nil array an an error.
+// If something has gone wrong it returns a nil string and an error.
 func (s1 *BitData) BitToString() (string, error) {
 	bt, err := s1.BitToByte()
 	if err != nil {
 		return "", err
 	}
 	return bytes.NewBuffer(bt).String(), nil
+}
+
+// BitToByte returns a decoded and trimmed string given a BitData.
+// If something has gone wrong it returns a nil string and an error.
+func (s1 *BitData) BitToTrimmedString() (string, error) {
+	var (
+		bt, err = s1.BitToByte()
+	)
+	for bt[0] == byte(0) {
+		bt = bt[1:]
+	}
+	r := len(bt) - 1
+	for bt[r] == byte(0) {
+		bt = bt[:r]
+		r = len(bt) - 1
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return bytes.NewBuffer(bt).String(), nil
+}
+
+// BitToByte returns a decoded string of length l bits given a BitData.
+// If something has gone wrong it returns a nil string and an error.
+func (s1 *BitData) BitToStringOfLengthL(l uint64) (string, error) {
+	var (
+		bytesCount = l / 8 // l as bytes
+		bt, err    = s1.BitToByte()
+	)
+	if err != nil {
+		return "", err
+	}
+	return bytes.NewBuffer(bt[:bytesCount]).String(), nil
 }
 
 // Given a slice of string, GetTotalBitCount returns the
@@ -227,7 +275,7 @@ func (s1 *BitData) Select1(i uint64) (uint64, error) {
 			return j, nil
 		}
 	}
-	return uint64(0), errors.New("there are less than i 1s in the array")
+	return uint64(0), ErrLessThanIOnes
 }
 
 // Rank1(B,i) returns the number of 1s in the prefix B[1...i] aka B[0...i-1].
@@ -257,14 +305,33 @@ func (s1 *BitData) Rank1(i uint64) (uint64, error) {
 func checkIndex(s1 *BitData, i uint64) error {
 	// invalid i check
 	if i > s1.Len {
-		return errors.New("i should not be greater than the length of the array")
+		return ErrInvalidI
 	}
 	if i == uint64(0) {
-		return errors.New("i should be greater than 0")
+		return ErrZeroI
 	}
 	return nil
 }
 
 func (s1 *BitData) String() string {
-	return fmt.Sprintf("type: %T, bits:%v, Len:%v", s1, s1.bits, s1.Len)
+	s := ""
+	i := s1.Len - 1
+	for {
+		if bit, err := s1.GetBit(i); err != nil {
+			fmt.Println(i)
+			return err.Error() + " in String()"
+		} else {
+			if bit {
+				s += "1"
+			} else {
+				s += "0"
+			}
+		}
+
+		if i == 0 {
+			break
+		}
+		i--
+	}
+	return fmt.Sprintf("type: %T, bits:%v, Len:%v, readableBitData:%s", s1, s1.bits, s1.Len, s)
 }

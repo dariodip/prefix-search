@@ -1,12 +1,12 @@
 package main
 
-import (
-	"fmt"
+import "github.com/dariodip/prefix-search/cmd"
+
+var (
+	VERSION = "0.0.1"
 )
 
 func main() {
 
-	fmt.Println("Hello FC/RC/LPRC")
-	
+	cmd.Execute(VERSION)
 }
-

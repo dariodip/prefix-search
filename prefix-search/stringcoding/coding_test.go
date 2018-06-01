@@ -25,44 +25,6 @@ func TestGetBitDataSingleChar(t *testing.T) {
 	}
 }
 
-func TestAddAndGetUnaryLength(t *testing.T) {
-	a := assert.New(t)
-	const (
-		n1              = uint64(5)         // length to set
-		expectedLength  = uint64(1 + 5 + 1) // first 0 + 5 * '1' + last 0
-		expected1sCount = uint64(5)
-	)
-	var (
-		c           = New([]string{"ciaos"})
-		onesCounter uint64      // counter of 1s
-		lastIndex   = uint64(1) // last index of the array
-	)
-
-	t.Log("Add unary value")
-	err := c.addUnaryLength(n1)
-	a.Nil(err, "Error should be nil")
-	t.Log("Get lengths array")
-	lengthBitData := c.Lengths
-	a.NotNil(lengthBitData, "Lengths array should not be nil")
-	a.Equal(expectedLength, lengthBitData.Len, "Len value should be 6 (5 + 1)")
-	a.Equal(expectedLength, c.NextLengthsIndex, "NextLengthsIndex should be 6")
-	for lastIndex >= 0 {
-		bit, err := lengthBitData.GetBit(lastIndex)
-		a.Nil(err, "Error should be nil")
-		if !bit {
-			break
-		} else {
-			onesCounter++
-		}
-		lastIndex++
-	}
-	a.Equal(expected1sCount, onesCounter, "Array contains 5 ones")
-
-	checkUnaryToInt, err := c.unaryToInt(uint64(0))
-	a.Nil(err, "Error should be nil")
-	a.Equal(expected1sCount, checkUnaryToInt, "Check unary to int should be 5")
-}
-
 // Unit test in order to check out if the method getBitData
 // works on a string of two characters
 func TestGetBitDataTwoChar(t *testing.T) {
@@ -113,26 +75,38 @@ func TestCoding_Add(t *testing.T) {
 		a           = assert.New(t)
 		lprc        = NewLPRC([]string{s1, s2, s3}, epsilon)
 		stringsBits = []bool{ // expected Strings final state
-			true, false, false, false, false, true, true, false,
-			true, false, false, true, false, true, true, false,
-			true, true, false, false, false, true, true, false,
-			true, true, false, false, false, true, true, false,
-			true, true, false, false, false, true, true, false,
-			true, true, false, false, false, true, true, false,
-			true, true,
-			true, true, false, false, false, true, true, false,
+			false, false, false, false, false, false, false, false, // null char
+			true, false, false, false, false, true, true, false, // a
+			true, false, false, true, false, true, true, false, // i
+			true, true, false, false, false, true, true, false, // c
+
+			false, false, false, false, false, false, false, false, // null char
+			true, true, false, false, false, true, true, false, // c
+			true, true, false, false, false, true, true, false, // c
+			true, true, false, false, false, true, true, false, // c
+			true, true, // remaining bits of c - a
+
+			false, false, false, false, false, false, false, false, // null char of the last c
+			true, true, false, false, false, true, true, false, // last c uncompressed
 		}
+		// nb in this example we didn't care about the lexicographic order of the strings
+		// in order the achieve an instance in which te last byte was uncompressed
 
 		startsBits = []bool{ // expected Starts final state
-			true, false, false, false, false, false, false, false,
-			false, false, false, false, false, false, false, false,
-			false, false, false, false, false, false, false, false,
-			true, false, false, false, false, false, false, false,
-			false, false, false, false, false, false, false, false,
-			false, false, false, false, false, false, false, false,
-			false, false,
-			true, false, false, false, false, false, false, false,
+			true, false, false, false, false, false, false, false, // x01
+			false, false, false, false, false, false, false, false, // x00
+			false, false, false, false, false, false, false, false, // x00
+			false, false, false, false, false, false, false, false, // x00
+			true, false, false, false, false, false, false, false, // x01
+			false, false, false, false, false, false, false, false, // x00
+			false, false, false, false, false, false, false, false, // x00
+			false, false, false, false, false, false, false, false, // x00
+			false, false, // 00
+			true, false, false, false, false, false, false, false, // x01
+			false, false, false, false, false, false, false, false, // \
 		}
+
+		isUncompressedBits = []bool{true, false, true}
 	)
 
 	a.NotEqual(s1, s2, s3, "The three test strings must not be equal")
@@ -140,7 +114,7 @@ func TestCoding_Add(t *testing.T) {
 	err := lprc.add(s1, 0)
 	a.Nil(err, "Cannot add string %s. %s", s1, err)
 	// Strings and LastString check, since we have only one strings for now we can use getBitData
-	s1bits, err := bd.GetBitData(s1)
+	s1bits, err := bd.GetBitData(s1 + string("\x00"))
 	a.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s1, err)
 
 	// Checking the behavior when we add the first strings
@@ -169,10 +143,9 @@ func TestCoding_Add(t *testing.T) {
 	}
 
 	// Lengths
-	s1len, err := lprc.coding.unaryToInt(0)
+	s1val, err := lprc.coding.decodeIthEliasGamma(0)
 	a.Nil(err, "Something goes wrong: %s", err)
-	a.Equal(s1len, bd.GetLengthInBit(s1), "Some bit are missing in Lengths. Found %d, expected %d", s1len,
-		len(s1))
+	a.Equal(s1val, uint64(0), "Some bit are missing in Lengths. Found %d, expected %d", s1val, uint64(0))
 
 	a.Equal(lprc.latestCompressedBitWritten, uint64(0), "The string should not be compressed")
 
@@ -181,7 +154,7 @@ func TestCoding_Add(t *testing.T) {
 	a.Nil(err, "Cannot add string %s. %s", s2, err)
 
 	// Check if lastString is now s2
-	s2bits, err := bd.GetBitData(s2)
+	s2bits, err := bd.GetBitData(s2 + string("\x00"))
 	a.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s1, err)
 	a.Equal(s2bits, lprc.coding.LastString, "Wrong conversion on LastString, should be equal to %s",
 		s2)
@@ -194,12 +167,12 @@ func TestCoding_Add(t *testing.T) {
 		"wrong latest compressed bit written. Found %d, expected %d",
 		compressedS2.Len, lprc.latestCompressedBitWritten)
 
-	s2suffixLen, err := lprc.coding.unaryToInt(bd.GetLengthInBit(s1) + 1)
+	s2val, err := lprc.coding.decodeIthEliasGamma(1)
 	a.Nil(err, "Something goes wrong: %s", err)
-	a.Equal(s2suffixLen, uint64(26), "Some bit are missing in Lengths. Found %d, expected %d",
-		s2suffixLen, uint64(26))
+	a.Equal(s2val, uint64(8+2), "Some bit are missing in Lengths. Found %d, expected %d",
+		s2val, uint64(8+2))
 
-	s3bits, err := bd.GetBitData(s3)
+	s3bits, err := bd.GetBitData(s3 + string("\x00"))
 	a.Nil(err, "Something goes wrong while converting %s in a BitData: %s", s3, err)
 
 	// Due to the value of c, now s3 should be uncompressed even if it can in theory be completely compressed
@@ -209,8 +182,8 @@ func TestCoding_Add(t *testing.T) {
 	a.Equal(s3bits.Len, lprc.coding.LastString.Len, "Wrong len on LastString, should be %d", s3bits.Len)
 	a.Equal(lprc.latestCompressedBitWritten, uint64(0), "String %s should be uncompressed", s3)
 
-	s3len, err := lprc.coding.unaryToInt(bd.GetLengthInBit(s1) + 1 + s2suffixLen + 1)
-	a.Equal(s3len, s3bits.Len, "Wrong bit len for %s. Found %d, expected %d", s3, s3len, s3bits.Len)
+	s3val, err := lprc.coding.decodeIthEliasGamma(2)
+	a.Equal(s3val, s2bits.Len, "Wrong bit len for %s. Found %d, expected %d", s3, s3val, s2bits.Len)
 
 	// Check the structure final state
 	// Strings check
@@ -227,6 +200,14 @@ func TestCoding_Add(t *testing.T) {
 		a.Nil(err, "Cannot access bit %d. %s", i, err)
 		a.Equal(bit, startsBits[i], "Wrong bit at position %d. Found %t, expected %t",
 			i, bit, startsBits[i])
+	}
+
+	// isUncompressed check
+	for i := uint64(0); i < lprc.isUncompressed.Len; i++ {
+		isCompressed, err := lprc.isUncompressed.GetBit(i)
+		a.Nil(err, "Cannot access bit %d. %s", i, err)
+		a.Equal(isCompressed, isUncompressedBits[i], "Wrong bit at position %d. Found %t, expected %t",
+			i, isCompressed, isUncompressedBits[i])
 	}
 }
 
