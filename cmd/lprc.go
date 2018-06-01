@@ -29,14 +29,18 @@ TODO...
 func init() {
 
 	rootCmd.AddCommand(lprcCmd)
-	lprcCmd.Flags().StringVarP(&inputFile, "INPUT_FILE", "i", "", "Input file containing"+
-		" all the word to build up the dictionary")
-	lprcCmd.MarkFlagRequired("INPUT_FILE")
-	lprcCmd.MarkFlagFilename("INPUT_FILE")
+	lprcCmd.Flags().StringVarP(&inputFile, "input_file", "i", "", "Input file containing"+
+		" all the word to build up the dictionary.")
+	lprcCmd.MarkFlagRequired("input_file")
+	lprcCmd.MarkFlagFilename("input_file")
 
-	lprcCmd.Flags().StringVarP(&inputPrefixFile, "INPUT_PREFIX_FILE", "p", "", "Input"+
-		" file containing all the prefix to search on the dictionary")
-	lprcCmd.MarkFlagRequired("INPUT_PREFIX_FILE")
-	lprcCmd.MarkFlagFilename("INPUT_PREFIX_FILE")
+	lprcCmd.Flags().StringVarP(&inputPrefixFile, "input_p_file", "p", "", "Input"+
+		" file containing all the prefix to search on the dictionary.")
+	lprcCmd.MarkFlagRequired("input_p_file")
+	lprcCmd.MarkFlagFilename("input_p_file")
+
+	lprcCmd.Flags().Float64VarP(&epsilon, "epsilon", "e", 0, "Epsilon is the parameter"+
+		"given to the algorithm in order to decide how many bits compress in the trie.")
+	lprcCmd.MarkFlagRequired("epsilon")
 
 }

@@ -10,6 +10,7 @@ var (
 	VERSION         string
 	inputFile       string
 	inputPrefixFile string
+	epsilon         float64
 )
 
 var rootCmd = &cobra.Command{
@@ -34,6 +35,5 @@ func Execute(version string) {
 }
 
 func run(cmd *cobra.Command, args []string) {
-	// TODO
-	fmt.Println(args)
+	cmd.Help()
 }

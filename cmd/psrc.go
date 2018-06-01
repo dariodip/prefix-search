@@ -29,13 +29,13 @@ TODO...
 func init() {
 	rootCmd.AddCommand(psrcCmd)
 
-	psrcCmd.Flags().StringVarP(&inputFile, "INPUT_FILE", "i", "", "Input file containing"+
+	psrcCmd.Flags().StringVarP(&inputFile, "input_file", "i", "", "Input file containing"+
 		" all the word to build up the dictionary")
-	psrcCmd.MarkFlagRequired("INPUT_FILE")
-	psrcCmd.MarkFlagFilename("INPUT_FILE")
+	psrcCmd.MarkFlagRequired("input_file")
+	psrcCmd.MarkFlagFilename("input_file")
 
-	psrcCmd.Flags().StringVarP(&inputPrefixFile, "INPUT_PREFIX_FILE", "p", "", "Input"+
+	psrcCmd.Flags().StringVarP(&inputPrefixFile, "input_p_file", "p", "", "Input"+
 		" file containing all the prefix to search on the dictionary")
-	psrcCmd.MarkFlagRequired("INPUT_PREFIX_FILE")
-	psrcCmd.MarkFlagFilename("INPUT_PREFIX_FILE")
+	psrcCmd.MarkFlagRequired("input_p_file")
+	psrcCmd.MarkFlagFilename("input_p_file")
 }
