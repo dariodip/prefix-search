@@ -20,6 +20,9 @@ type LPRC struct {
 // an uncompressed string.
 func NewLPRC(strings []string, epsilon float64) LPRC {
 	stringsCount := uint64(len(strings))
+	if epsilon <= float64(0) { // check if epsilon is valid
+		panic("epsilon should be greater than 0")
+	}
 	c := 2.0 + 2.0/epsilon
 	return LPRC{New(strings),
 		epsilon,
