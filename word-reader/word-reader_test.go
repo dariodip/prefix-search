@@ -1,18 +1,13 @@
 package word_reader
 
 import (
-	"os"
 	"path"
+	"path/filepath"
 	"testing"
 )
 
 func TestWordReader_readLines(t *testing.T) {
-	workingDir, err := os.Getwd()
-	if err != nil {
-		t.Errorf("cannot read working dir")
-		os.Exit(1)
-	}
-
+	workingDir, _ := filepath.Abs("..")
 	type fields struct {
 		path    string
 		strings []string
@@ -58,10 +53,10 @@ func TestWordReader_readLines(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			wr := &WordReader{
 				path:    tt.fields.path,
-				strings: tt.fields.strings,
+				Strings: tt.fields.strings,
 			}
 
-			got, err := wr.readLines()
+			got, err := wr.ReadLines()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("WordReader.readLines() error = %v, wantErr %v", err, tt.wantErr)
 				return

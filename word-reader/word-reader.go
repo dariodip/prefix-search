@@ -7,14 +7,14 @@ import (
 
 type WordReader struct {
 	path    string
-	strings []string
+	Strings []string
 }
 
 func New(path string) *WordReader {
 	return &WordReader{path, []string{}}
 }
 
-func (wr *WordReader) readLines() (int, error) {
+func (wr *WordReader) ReadLines() (int, error) {
 
 	file, err := os.Open(wr.path)
 	if err != nil {
@@ -24,8 +24,8 @@ func (wr *WordReader) readLines() (int, error) {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		wr.strings = append(wr.strings, scanner.Text())
+		wr.Strings = append(wr.Strings, scanner.Text())
 	}
-	return len(wr.strings), scanner.Err()
+	return len(wr.Strings), scanner.Err()
 
 }

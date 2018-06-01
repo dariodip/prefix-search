@@ -65,6 +65,7 @@ func (c *Coding) setStartsWithOffset(differentSuffix *bd.BitData) error {
 }
 
 func (c *Coding) String() string {
-	return fmt.Sprintf("type:%T, Strings: %v, Starts:%v, Lengths:%v, LastString:%v, NextIndex:%v, NextLengthsIndex:%v",
+	return fmt.Sprintf(`type:%T, \nStrings: %v, \nStarts:%v, \nLengths:%v, \nLastString:%v, \nNextIndex:%v, 
+\nNextLengthsIndex:%v`,
 		c, c.Strings, c.Starts, c.Lengths, c.LastString, c.NextIndex, c.NextLengthsIndex)
 }

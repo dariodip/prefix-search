@@ -1,9 +1,9 @@
 package stringcoding
 
 import (
+	"errors"
 	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"math"
-	"errors"
 )
 
 var (
@@ -16,7 +16,7 @@ var (
 func getEliasGammaLength(strings []string) (uint64, error) {
 	count := uint64(0)
 	for _, s := range strings {
-		if len(s) == 0 {  // Elias Gamma length is undefined for the empty string
+		if len(s) == 0 { // Elias Gamma length is undefined for the empty string
 			return uint64(0), ErrEmptyString
 		}
 		count += uint64(2*math.Floor(math.Log2(float64(bd.GetLengthInBit(s)))) + 1)
@@ -45,7 +45,7 @@ func (c *Coding) encodeEliasGamma(n uint64) error {
 	}
 	// once we wrote our |_log_2 (n) _| 0s, we have to convert our n to binary. Let's use a marker
 	marker := uint64(1) << bigN // marker has 1 only in the position bigN
-	for marker > 0 { // while marker is marking another valid bit
+	for marker > 0 {            // while marker is marking another valid bit
 		if err := c.Lengths.AppendBit(marker&n != uint64(0)); err != nil { // let's add the i-th bit to our Lengths
 			panic(err) // we got an error and must panic everything (we don't know how many bits have been written)
 		}
@@ -92,9 +92,9 @@ func (c *Coding) decodeIthEliasGamma(u uint64) (uint64, error) {
 
 func (c *Coding) extractNumFromBinary(currentIndex uint64, zeroCount uint64) (uint64, error) {
 	var (
-		marker = uint64(1) << zeroCount    // marker has 1 only in the position zeroCount
-		n      = uint64(0)    // 000...00
-		index  = currentIndex // index of Lengths in which we start
+		marker = uint64(1) << zeroCount // marker has 1 only in the position zeroCount
+		n      = uint64(0)              // 000...00
+		index  = currentIndex           // index of Lengths in which we start
 	)
 
 	for marker > 0 { // marker has still a bit set to 1

@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/dariodip/prefix-search/prefix-search/stringcoding"
+	"github.com/dariodip/prefix-search/word-reader"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +24,7 @@ TODO...
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(inputFile)
 		fmt.Println(inputPrefixFile)
-		fmt.Println("lprc called") // TODO
+		runLPRC()
 	},
 }
 
@@ -43,4 +45,21 @@ func init() {
 		"given to the algorithm in order to decide how many bits compress in the trie.")
 	lprcCmd.MarkFlagRequired("epsilon")
 
+}
+
+func runLPRC() {
+
+	// load words
+	wr := word_reader.New(inputFile)
+	wr.ReadLines()
+
+	// load prefix
+	wrp := word_reader.New(inputPrefixFile)
+	wrp.ReadLines()
+
+	lprcImpl := stringcoding.NewLPRC(wr.Strings, epsilon)
+	if err := lprcImpl.PopulateLPRC(); err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(lprcImpl.String()) // TODO
 }

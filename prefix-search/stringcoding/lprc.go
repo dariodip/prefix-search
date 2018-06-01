@@ -1,8 +1,10 @@
 package stringcoding
 
 import (
+	"fmt"
 	bd "github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"github.com/golang-collections/go-datastructures/bitarray"
+	"sort"
 )
 
 type LPRC struct {
@@ -23,12 +25,29 @@ func NewLPRC(strings []string, epsilon float64) LPRC {
 	if epsilon <= float64(0) { // check if epsilon is valid
 		panic("epsilon should be greater than 0")
 	}
+	strings = sortLexigographically(strings)
 	c := 2.0 + 2.0/epsilon
 	return LPRC{New(strings),
 		epsilon,
 		c, 0,
 		strings,
 		bd.New(bitarray.NewBitArray(stringsCount), stringsCount)}
+}
+
+func sortLexigographically(strings []string) []string {
+	sort.Slice(strings, func(i, j int) bool {
+		return strings[i] < strings[j]
+	})
+	return strings
+}
+
+func (lprc *LPRC) PopulateLPRC() error {
+	for i, s := range lprc.strings {
+		if err := lprc.add(s, uint64(i)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func calcLen(prefixLen, stringLen uint64) uint64 {
@@ -218,11 +237,7 @@ func saveUncompressed(stringToAdd *bd.BitData, bdS *bd.BitData, lprc *LPRC) bool
 	return stringToAdd.Len == bdS.Len || float64(lprc.latestCompressedBitWritten) > lprc.c*float64(bdS.Len)
 }
 
-func (lprc *LPRC) run() error {
-	for i, s := range lprc.strings {
-		if err := lprc.add(s, uint64(i)); err != nil {
-			return err
-		}
-	}
-	return nil
+func (lprc *LPRC) String() string {
+	return fmt.Sprintf(`type:%T coding:%v, Epsilon:%v, c:%v, strings:%v, isUncompressed:%v`,
+		lprc, lprc.coding, lprc.Epsilon, lprc.c, lprc.strings, lprc.isUncompressed)
 }
