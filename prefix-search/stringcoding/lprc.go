@@ -111,7 +111,7 @@ func (lprc *LPRC) add(s string, index uint64) error {
 // Retrieval(u, l) returns the prefix of the string string(u) with length l.
 // So the returned prefix ends up in the edge (p(u), u).
 func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
-
+	fmt.Println(lprc.isUncompressed)
 	var (
 		stringBuffer = bd.New(bitarray.NewBitArray(l), l) // let's create a buffer in order to store our prefix
 	)
@@ -127,7 +127,7 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 				l = ll // we can only return a string as big as our string
 			}
 		} // end else
-		err := lprc.populateBuffer(stringBuffer, l, u, uint64(0)) // we get the first l bits of that string
+		err := lprc.populateBuffer(stringBuffer, l, u, uint64(0), l) // we get the first l bits of that string
 		if err != nil {
 			panic(err)
 		}
@@ -149,8 +149,8 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 		if err != nil {                                                   // in order to extract the size of string(v)
 			return "", err
 		}
-		lengthStringV := vNextStarts - vStarts                   // that's the length of string(v)
-		err = lprc.populateBuffer(stringBuffer, l, vPosition, 0) // insert the first l bits of string(v) in the buffer
+		lengthStringV := vNextStarts - vStarts                                  // that's the length of string(v)
+		err = lprc.populateBuffer(stringBuffer, l, vPosition, 0, lengthStringV) // insert the first l bits of string(v) in the buffer
 		if err != nil {
 			panic(err)
 		}
@@ -174,7 +174,7 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 			if ni >= l {
 				continue // first l bits are the same, so we can skip
 			} else {
-				err := lprc.populateBuffer(stringBuffer, l, i, ni) // populate the buffer
+				err := lprc.populateBuffer(stringBuffer, l, i, ni, lengthI) // populate the buffer
 				if err != nil {
 					return "", err
 				}
@@ -227,8 +227,11 @@ func (lprc *LPRC) getStringLength(i uint64) (uint64, error) {
 	return lengthI + ni, nil // number of bit saved by the coding
 }
 
-func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, ni uint64) error {
-	var uPosition uint64
+func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, ni uint64, llen uint64) error {
+	var (
+		uPosition uint64
+		maxIt     uint64
+	)
 	if (u + 1) == uint64(len(lprc.strings)) {
 		uPosition = lprc.coding.Strings.Len // u is the last string memorized!
 	} else {
@@ -238,8 +241,13 @@ func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, n
 			return err
 		}
 	}
-	uPosition = uPosition - 1           // The most significant bits are at the end
-	for i := uint64(0); i < l-ni; i++ { // let's iterate for i = 0 up to l - 1 (l times)
+	if llen < l {
+		maxIt = llen
+	} else {
+		maxIt = l - ni
+	}
+	uPosition = uPosition - 1            // The most significant bits are at the end
+	for i := uint64(0); i < maxIt; i++ { // let's iterate for i = 0 up to l - 1 (l times)
 		// We start from the most significant bits
 		lastBit, lastBitErr := lprc.coding.Strings.GetBit(uPosition - i) // take the i-th bit of string(u)
 		if lastBitErr != nil {                                           // getBit has gone wrong

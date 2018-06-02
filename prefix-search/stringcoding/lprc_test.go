@@ -3,7 +3,6 @@ package stringcoding
 import (
 	"testing"
 
-	"fmt"
 	"reflect"
 )
 
@@ -27,7 +26,7 @@ func TestLPRC_Retrieval(t *testing.T) {
 			"0) error test",
 			fields{
 				1,
-				[]string{"caso", "cat", "cena", "delfino"},
+				[]string{"caso", "cat", "cena", "delfino"}, //uccc
 			},
 			args{
 				uint64(3),
@@ -377,7 +376,6 @@ func TestLPRC_FullPrefixSearch(t *testing.T) {
 				lprc.add(s, uint64(i))
 			}
 			got, err := lprc.FullPrefixSearch(tt.args.prefix)
-			fmt.Println(got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LPRC.FullPrefixSearch() error = %v, wantErr %v", err, tt.wantErr)
 				return
