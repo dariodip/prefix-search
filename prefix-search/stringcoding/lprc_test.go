@@ -2,6 +2,9 @@ package stringcoding
 
 import (
 	"testing"
+
+	"fmt"
+	"reflect"
 )
 
 func TestLPRC_Retrieval(t *testing.T) {
@@ -20,6 +23,19 @@ func TestLPRC_Retrieval(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
+		{
+			"0) error test",
+			fields{
+				1,
+				[]string{"caso", "cat", "cena", "delfino"},
+			},
+			args{
+				uint64(3),
+				uint64(64),
+			},
+			"delfino",
+			false,
+		},
 		{
 			"1) First uncompressed string",
 			fields{
@@ -150,6 +166,32 @@ func TestLPRC_Retrieval(t *testing.T) {
 			"cuz",
 			false,
 		},
+		{
+			"11) last string less 1 char",
+			fields{
+				1,
+				[]string{"casotto", "cisonostatierrori", "cuz", "delfino"},
+			},
+			args{
+				uint64(3),
+				uint64(48),
+			},
+			"delfin",
+			false,
+		},
+		{
+			"12) last string full",
+			fields{
+				1,
+				[]string{"casotto", "cisonostatierrori", "cuz", "delfino"},
+			},
+			args{
+				uint64(3),
+				uint64(56),
+			},
+			"delfino",
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -157,7 +199,6 @@ func TestLPRC_Retrieval(t *testing.T) {
 			for i, s := range tt.fields.strings {
 				lprc.add(s, uint64(i))
 			}
-
 			got, err := lprc.Retrieval(tt.args.u, tt.args.l)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LPRC.Retrieval() error = %v, wantErr %v", err, tt.wantErr)
@@ -166,6 +207,183 @@ func TestLPRC_Retrieval(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("len(got)= %d", len(got))
 				t.Errorf("LPRC.Retrieval() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestLPRC_getStringLength(t *testing.T) {
+	type fields struct {
+		Epsilon float64
+		strings []string
+	}
+	type args struct {
+		i uint64
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    uint64
+		wantErr bool
+	}{
+		{
+			"Uncompressed string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				uint64(0),
+			},
+			uint64(40),
+			false,
+		},
+		{
+			"Compressed string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				uint64(1),
+			},
+			uint64(40),
+			false,
+		},
+		{
+			"Compressed string next to a compressed string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				uint64(2),
+			},
+			uint64(64),
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lprc := NewLPRC(tt.fields.strings, tt.fields.Epsilon)
+			for i, s := range tt.fields.strings {
+				lprc.add(s, uint64(i))
+			}
+			got, err := lprc.getStringLength(tt.args.i)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("LPRC.getStringLength() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("LPRC.getStringLength() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestLPRC_FullPrefixSearch(t *testing.T) {
+	type fields struct {
+		Epsilon float64
+		strings []string
+	}
+	type args struct {
+		prefix string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		{
+			"Last string",
+			fields{
+				1,
+				[]string{"casotto", "cisonostatierrori", "cuz", "delfino"},
+			},
+			args{
+				"de",
+			},
+			[]string{"delfino"},
+			false,
+		},
+		{
+			"Uncompressed string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				"ca",
+			},
+			[]string{"caso"},
+			false,
+		},
+		{
+			"Compressed string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				"ce",
+			},
+			[]string{"cena"},
+			false,
+		},
+		{
+			"Two strings",
+			fields{
+				1.0,
+				[]string{"caso", "cat", "cena", "delfino"},
+			},
+			args{
+				"ca",
+			},
+			[]string{"caso", "cat"},
+			false,
+		},
+		{
+			"Compressed string next to a compressed one",
+			fields{
+				1.0,
+				[]string{"caso", "cat", "cena", "delfino"},
+			},
+			args{
+				"no",
+			},
+			[]string{},
+			false,
+		},
+		{
+			"Last string",
+			fields{
+				1.0,
+				[]string{"caso", "cat", "cena", "delfino"},
+			},
+			args{
+				"de",
+			},
+			[]string{"delfino"},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lprc := NewLPRC(tt.fields.strings, tt.fields.Epsilon)
+			for i, s := range tt.fields.strings {
+				lprc.add(s, uint64(i))
+			}
+			got, err := lprc.FullPrefixSearch(tt.args.prefix)
+			fmt.Println(got)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("LPRC.FullPrefixSearch() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("LPRC.FullPrefixSearch() = %v, want %v", got, tt.want)
 			}
 		})
 	}

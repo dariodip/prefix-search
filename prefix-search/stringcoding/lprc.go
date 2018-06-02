@@ -41,7 +41,7 @@ func sortLexigographically(strings []string) []string {
 	return strings
 }
 
-func (lprc *LPRC) PopulateLPRC() error {
+func (lprc *LPRC) Populate() error {
 	for i, s := range lprc.strings {
 		if err := lprc.add(s, uint64(i)); err != nil {
 			return err
@@ -181,6 +181,7 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 			} // end else
 		} // end for
 	} //end else !isUncompressedStringU
+	fmt.Println(stringBuffer)
 	return stringBuffer.BitToTrimmedString()
 }
 
@@ -200,6 +201,30 @@ func (lprc *LPRC) getLengthInStrings(i uint64) (uint64, error) {
 	}
 
 	return startPositionSuccI - startPositionI, nil
+}
+
+func (lprc *LPRC) getStringLength(i uint64) (uint64, error) {
+	isUncomp, err := lprc.isUncompressed.GetBit(i)
+	if err != nil {
+		return uint64(0), err
+	}
+	if i == uint64(0) || isUncomp { // uncompressed string
+		return lprc.getLengthInStrings(i)
+	}
+	lengthStringPI, err := lprc.getStringLength(i - 1) // length of the parent
+	if err != nil {
+		return uint64(0), err
+	}
+	li, err := lprc.coding.decodeIthEliasGamma(i) // li is the number of bits to remove in string(p(i)) in order to
+	if err != nil {                               // obtain the prefix for string(i)
+		return uint64(0), err
+	}
+	ni := lengthStringPI - li
+	lengthI, err := lprc.getLengthInStrings(i) // lengthI is the number of bits stored in Strings
+	if err != nil {
+		return uint64(0), err
+	} // our string length is the number of bits stored in String +
+	return lengthI + ni, nil // number of bit saved by the coding
 }
 
 func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, ni uint64) error {
@@ -233,6 +258,56 @@ func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, n
 	return nil
 }
 
+// FullPrefixSearch, given a prefix *prefix* returns all the strings that start with that prefix.
+func (lprc *LPRC) FullPrefixSearch(prefix string) ([]string, error) {
+	var (
+		l            uint64                    // first node having *prefix* as prefix
+		r            uint64                    // last node having *prefix* as prefix
+		lenPrefix    = uint64(len(prefix) * 8) // |prefix|
+		totalStrings = uint64(len(lprc.strings))
+		stringBuffer = []string{}
+		found        = false
+	)
+
+	for i := uint64(0); i < totalStrings; i++ {
+		if retrievalI, err := lprc.Retrieval(i, lenPrefix); err != nil {
+			return nil, err // if error was found
+		} else if retrievalI == prefix { // we found the first node having
+			l = i // i is the first string having prefix as prefix
+			found = true
+			break
+		}
+	}
+	if !found {
+		return []string{}, nil
+	}
+
+	for i := l + 1; i < totalStrings; i++ {
+		if retrievalI, err := lprc.Retrieval(i, lenPrefix); err != nil {
+			return nil, err // if error was found
+		} else if retrievalI != prefix { // we found the first node that does not have prefix as prefix
+			r = i - 1 // r is the last node having prefix as prefix
+			break
+		}
+	}
+	if r < l { // only one string
+		r = l
+	}
+
+	for i := l; i <= r; i++ {
+		stringILen, err := lprc.getStringLength(i)
+		if err != nil {
+			return nil, err
+		}
+		s, err := lprc.Retrieval(i, stringILen)
+		if err != nil {
+			return nil, err
+		}
+		stringBuffer = append(stringBuffer, s)
+	}
+	return stringBuffer, nil
+}
+
 func saveUncompressed(stringToAdd *bd.BitData, bdS *bd.BitData, lprc *LPRC) bool {
 	return stringToAdd.Len == bdS.Len || float64(lprc.latestCompressedBitWritten) > lprc.c*float64(bdS.Len)
 }
@@ -240,4 +315,16 @@ func saveUncompressed(stringToAdd *bd.BitData, bdS *bd.BitData, lprc *LPRC) bool
 func (lprc *LPRC) String() string {
 	return fmt.Sprintf(`type:%T coding:%v, Epsilon:%v, c:%v, strings:%v, isUncompressed:%v`,
 		lprc, lprc.coding, lprc.Epsilon, lprc.c, lprc.strings, lprc.isUncompressed)
+}
+
+// it fails if LPRC type does not implements PrefixSearch interface
+// it is done by the compiler
+func (lprc *LPRC) checkInterface() {
+	checkFunc := func(search PrefixSearch) bool {
+		return true
+	}
+	var sPs PrefixSearch
+	sLprc := NewLPRC([]string{}, 1.0)
+	sPs = &sLprc
+	checkFunc(sPs)
 }

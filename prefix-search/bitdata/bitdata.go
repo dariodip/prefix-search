@@ -212,6 +212,9 @@ func (s1 *BitData) BitToTrimmedString() (string, error) {
 	var (
 		bt, err = s1.BitToByte()
 	)
+	if len(bt) == 0 {
+		return "", nil
+	}
 	for bt[0] == byte(0) {
 		bt = bt[1:]
 	}

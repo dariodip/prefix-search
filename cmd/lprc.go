@@ -58,7 +58,7 @@ func runLPRC() {
 	wrp.ReadLines()
 
 	lprcImpl := stringcoding.NewLPRC(wr.Strings, epsilon)
-	if err := lprcImpl.PopulateLPRC(); err != nil {
+	if err := lprcImpl.Populate(); err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(lprcImpl.String()) // TODO
