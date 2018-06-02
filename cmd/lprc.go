@@ -22,8 +22,6 @@ Our implementation takes in input two files:
 TODO...
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(inputFile)
-		fmt.Println(inputPrefixFile)
 		runLPRC()
 	},
 }

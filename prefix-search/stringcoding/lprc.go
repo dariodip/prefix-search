@@ -111,7 +111,6 @@ func (lprc *LPRC) add(s string, index uint64) error {
 // Retrieval(u, l) returns the prefix of the string string(u) with length l.
 // So the returned prefix ends up in the edge (p(u), u).
 func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
-	fmt.Println(lprc.isUncompressed)
 	var (
 		stringBuffer = bd.New(bitarray.NewBitArray(l), l) // let's create a buffer in order to store our prefix
 	)
@@ -181,7 +180,6 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 			} // end else
 		} // end for
 	} //end else !isUncompressedStringU
-	fmt.Println(stringBuffer)
 	return stringBuffer.BitToTrimmedString()
 }
 

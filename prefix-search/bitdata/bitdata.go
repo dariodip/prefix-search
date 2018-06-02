@@ -321,7 +321,6 @@ func (s1 *BitData) String() string {
 	i := s1.Len - 1
 	for {
 		if bit, err := s1.GetBit(i); err != nil {
-			fmt.Println(i)
 			return err.Error() + " in String()"
 		} else {
 			if bit {

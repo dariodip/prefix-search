@@ -10,7 +10,10 @@ var (
 	VERSION         string
 	inputFile       string
 	inputPrefixFile string
+	algorithm       string
 	epsilon         float64
+	LPRCconst       = "lprc"
+	PSRCconst       = "psrc"
 )
 
 var rootCmd = &cobra.Command{
