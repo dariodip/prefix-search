@@ -7,6 +7,13 @@ import (
 	"sort"
 )
 
+type LPRCBitDataSize struct {
+	StringsSize 	   uint64
+	StartsSize 		   uint64
+	LengthsSize 	   uint64
+	IsUncompressedSize uint64
+}
+
 type LPRC struct {
 	coding                     *Coding
 	Epsilon                    float64
@@ -333,4 +340,14 @@ func (lprc *LPRC) checkInterface() {
 	sLprc := NewLPRC([]string{}, 1.0)
 	sPs = &sLprc
 	checkFunc(sPs)
+}
+
+// Returns the size in bits of the BitData used to compress the strings
+func (lprc *LPRC) GetBitDataSize() *LPRCBitDataSize {
+	return &LPRCBitDataSize{
+		lprc.coding.Strings.Len,
+		lprc.coding.Starts.Len,
+		lprc.coding.Lengths.Len,
+		lprc.isUncompressed.Len,
+	}
 }
