@@ -98,9 +98,25 @@ func runConsole(cmd *cobra.Command, args []string) {
 			fmt.Println("No string found")
 		}
 		for i, s := range strings {
+			endPrint := false
 			if i%10 == 0 && i > 0 {
-				fmt.Println("[...] hit enter to continue")
-				scanner.Scan()
+				usage := "[...] hit Enter to continue or q + Enter to end the visualization"
+				fmt.Println(usage)
+				for {
+					scanner.Scan()
+					text := scanner.Text()
+					if len(text) > 1 || (len(text) == 1 && text != "q") {
+						fmt.Println(usage)
+					} else if text == "q" {  // The user want to end the visualization
+						endPrint = true
+						break
+					} else {  // The user clicked only enter
+						break
+					}
+				}
+			}
+			if endPrint {
+				break
 			}
 			fmt.Printf("%d) %s \n", i+1, s)
 		}
