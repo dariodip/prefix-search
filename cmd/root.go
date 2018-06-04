@@ -15,12 +15,12 @@ var (
 	VERSION         string
 	inputFile       string
 	inputPrefixFile string
+	outputFile		string
 	algorithm       string
 	epsilon         float64
 	verbose         bool
 	LPRCconst       = "lprc"
 	PSRCconst       = "psrc"
-	resultsPath     = "resources/results/"
 )
 
 type ResultRow struct {
@@ -95,7 +95,7 @@ func getFileName(path string) string {
 
 // Saves to a file all the result memorized in res
 func saveToFile(res *Result, filename string) {
-	fp, err := os.Create(resultsPath + filename)
+	fp, err := os.Create(filename)
 	defer fp.Close()
 
 	if err != nil {

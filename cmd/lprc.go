@@ -48,10 +48,14 @@ func init() {
 	lprcCmd.MarkFlagRequired("epsilon")
 
 	lprcCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Detailed Output ")
+
+	lprcCmd.Flags().StringVarP(&outputFile, "output_file", "o", "", "Output file" +
+		" containing the final output of lprc, with information about the memory usage and the time elapsed.\n" +
+		"Default <word filename>-<prefix file name>-<epsilon>.json")
+	lprcCmd.MarkFlagFilename("output_file")
 }
 
 func lprcBenchmark() {
-
 	// load words
 	wr := word_reader.New(inputFile)
 	wr.ReadLines()
@@ -72,15 +76,17 @@ func lprcBenchmark() {
 	fmt.Printf("Size of the structure: %d bits\n", totalBitSize)
 	fmt.Println()
 
-	filename := fmt.Sprintf("%s-%s-%.2f.json", getFileName(inputFile), getFileName(inputPrefixFile),
-		lprcImpl.Epsilon)
+	if outputFile == "" { // no output file specified
+		outputFile = fmt.Sprintf("%s-%s-%.2f.json", getFileName(inputFile), getFileName(inputPrefixFile),
+			lprcImpl.Epsilon)
+	}
 	finalResults := &Result{
 		InitTime:             toMilliseconds(initTime),
 		Epsilon:              lprcImpl.Epsilon,
 		StructureSize:        *bdSize,
 		UncompressedDataSize: getBitSize(wr.Strings),
 	}
-	defer saveToFile(finalResults, filename)
+	defer saveToFile(finalResults, outputFile)
 
 
 	var searchTime time.Time
