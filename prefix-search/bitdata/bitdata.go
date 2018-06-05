@@ -132,7 +132,7 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 				return nil, errAppend
 			}
 		}
-		return s1, nil
+		return differentSuffix, nil
 	}
 	// we must keep both the indexes in order to avoid out of bound
 	for {
@@ -165,6 +165,62 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 		}
 	}
 	return differentSuffix, nil
+}
+
+// GetDifferentPrefix, given another pointer to a BitData, returns a new
+// BitData containing the prefix that is not equal between the two BitDatas.
+// If something goes wrong, returns a nil pointer and an error.
+func (s1 *BitData) GetDifferentPrefix(s2 *BitData) (*BitData, error) {
+	var (
+		commonSuffixLen uint64                   // length of the common prefix
+		idx1 = uint64(0) // first bit of the first "bitted" string
+		idx2 = uint64(0) // first bit of the second "bitted" string
+	)
+	if s1.bits == nil {
+		return nil, ErrNotInitBitData
+	}
+	if s2.bits == nil || s2.Len == uint64(0) { // trying to find common suffix between a string and a void one
+		differentPrefix := New(bitarray.NewBitArray(s1.Len), 0)
+		for i := uint64(0); i < s1.Len; i++ { // we must copy the first array!
+			bit, errGet := s1.GetBit(i)
+			if errGet != nil {
+				return nil, errGet
+			}
+			errAppend := differentPrefix.AppendBit(bit)
+			if errAppend != nil {
+				return nil, errAppend
+			}
+		}
+		return s1, nil
+	}
+	// we must keep both the indexes in order to avoid out of bound
+	for idx1 != s1.Len && idx2 != s2.Len {
+		bit1, e1 := s1.GetBit(idx1) // get bits in position idx1 (risp. idx2) on both strings
+		bit2, e2 := s2.GetBit(idx2)
+		if e1 != nil || e2 != nil { // something has gone wrong
+			return nil, &ErrInvalidPosition{idx1}
+		}
+		if bit1 == bit2 { // bits are still equal
+			commonSuffixLen++
+		} else {
+			break // bits are not still equal, we are in the different suffix
+		}
+		idx1++
+		idx2++
+	}
+
+	var (
+		prefixLen       = s2.Len - commonSuffixLen                // length of the different suffix
+		differentPrefix = New(bitarray.NewBitArray(prefixLen), 0) // init a new BitData to keep suffix
+	)
+	for i := uint64(0); i < prefixLen; i++ {
+		if bit, err := s2.GetBit(commonSuffixLen + i); err == nil {
+			differentPrefix.AppendBit(bit)
+		} else {
+			return nil, err
+		}
+	}
+	return differentPrefix, nil
 }
 
 // BitToByte returns a byte array in which each byte represents

@@ -147,6 +147,75 @@ func TestGetDifferentSuffixWithDifferentLength(t *testing.T) {
 	}
 }
 
+// Unit test in order to check out if the method GetDifferentPrefix
+// works on two string having the same length
+func TestGetDifferentPrefixWithSameLength(t *testing.T) {
+	t.Logf("Test GetDifferentPrefixWithSameLength started! \n")
+	var (
+		a      = assert.New(t)
+		s1, l1 = "cia", bitdata.GetLengthInBit("cia")
+		s2, l2 = "aia", bitdata.GetLengthInBit("aia")
+	)
+
+	a.NotEqual(s1, s2, "Strings should be not equal")
+	a.Equal(l1, l2, "But their length should be equal")
+
+	b1, e1 := bitdata.GetBitData(s1)
+	b2, e2 := bitdata.GetBitData(s2)
+	a.Equal(l1, b1.Len, "String (1) length should be as expected")
+	a.Equal(l2, b2.Len, "String (2) length should be as expected")
+	a.Nil(e1, "Error on converting first string")
+	a.Nil(e2, "Error on converting second string")
+	a.Equal(b1.Len, b2.Len, "Strings have the same length")
+	a.NotEqual(b1, b2, "Bitarrays are different")
+
+	// The different prefix should be "0110000"
+	expectedPrefix := []bool{false, false, false, false, true, true, false, }
+	receivedPrefix, err := b1.GetDifferentPrefix(b2)
+	a.Nil(err, "Unexpected error")
+	a.Equal(uint64(len(expectedPrefix)), receivedPrefix.Len, "Prefix should be of %d bits",
+		uint64(len(expectedPrefix)))
+	for i := uint64(0); i < receivedPrefix.Len; i++ {
+		receivedPrefixBit, err := receivedPrefix.GetBit(uint64(i))
+		a.Nil(err, "An error should not be caught")
+		a.Equal(expectedPrefix[i], receivedPrefixBit, "Prefix is as expected")
+	}
+}
+
+// Unit test in order to check out if the method GetDifferentPrefix
+// works on two string having different length
+func TestGetDifferentPrefixWithDifferentLength(t *testing.T) {
+	t.Logf("Test GetDifferentPrefixWithSameLength started! \n")
+	var (
+		a      = assert.New(t)
+		s1, l1 = "fare", bitdata.GetLengthInBit("fare")
+		s2, l2 = "stare", bitdata.GetLengthInBit("stare")
+	)
+	a.NotEqual(s1, s2, "Strings should be not equal")
+	a.NotEqual(l1, l2, "Their length should not be equal")
+
+	b1, e1 := bitdata.GetBitData(s1)
+	b2, e2 := bitdata.GetBitData(s2)
+	a.Nil(e1, "Error on converting first string")
+	a.Nil(e2, "Error on converting second string")
+	a.NotEqual(b1.Len, b2.Len, "Strings have not the same length")
+	a.NotEqual(b1, b2, "Bitarrays are different")
+
+	// The different prefix should be the reverse of "01110011 0111010"
+	expectedPrefix := []bool{
+		false, true, false, true, true, true, false,
+		true, true, false, false, true, true, true, false,
+	}
+	receivedPrefix, err := b1.GetDifferentPrefix(b2)
+	a.Nil(err, "Unexpected error")
+	a.Equal(uint64(len(expectedPrefix)), receivedPrefix.Len, "Prefix should be of %d bits",
+		uint64(len(expectedPrefix)))
+	for i := uint64(0); i < receivedPrefix.Len; i++ {
+		receivedPrefixBit, err := receivedPrefix.GetBit(uint64(i))
+		a.Nil(err, "An error should not be occurred")
+		a.Equal(expectedPrefix[i], receivedPrefixBit, "Prefix should be as expected")
+	}
+}
 // Unit test in order to check out if the method bitToByte
 // works on a string of 4 characters
 func TestBitToByte(t *testing.T) {
