@@ -406,10 +406,10 @@ func (psrc *PSRC) FullPrefixSearch(prefix string) ([]string, error) {
 
 	for _, index := range prefixBuffer {
 		stringLength, err := psrc.getStringLength(index)
-		fmt.Println(stringLength)
 		if err != nil {
 			return []string{}, err
 		}
+		stringLength -= 8
 		prefixedString, err := psrc.Retrieval(index, stringLength)
 		if err != nil {
 			return []string{}, err

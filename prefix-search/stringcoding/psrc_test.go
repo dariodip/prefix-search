@@ -1,8 +1,8 @@
 package stringcoding
 
 import (
-	"reflect"
 	"testing"
+	"reflect"
 )
 
 func TestPSRC_Retrieval(t *testing.T) {
@@ -29,7 +29,7 @@ func TestPSRC_Retrieval(t *testing.T) {
 			},
 			args{
 				uint64(2),
-				uint64(72),
+				uint64(16),
 			},
 			"de",
 			false,
@@ -319,6 +319,18 @@ func TestPSRC_FullPrefixSearch(t *testing.T) {
 				"de",
 			},
 			[]string{"delfino"},
+			false,
+		},
+		{
+			"First two strings",
+			fields{
+				1.0,
+				[]string{"caso", "cat", "cena", "delfino"},
+			},
+			args{
+				"ca",
+			},
+			[]string{"caso", "cat"},
 			false,
 		},
 	}
