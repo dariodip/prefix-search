@@ -357,86 +357,6 @@ func (psrc *PSRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, n
 	return nil
 }
 
-func (psrc *PSRC) populateBufferFromPrefix(stringBuffer *bd.BitData, l, u, li, vlen uint64) (*bd.BitData, error) {
-	// li common suffix
-	var (
-		uPosition uint64
-		maxIt     uint64
-	)
-	if (u + 1) == uint64(len(psrc.strings)) {
-		uPosition = psrc.coding.Strings.Len // u is the last string memorized!
-	} else {
-		var err error
-		uPosition, err = psrc.coding.Starts.Select1(u + 1 + 1) // We need to now where the next string starts
-		if err != nil {
-			return nil, err
-		}
-	}
-	if vlen < l {
-		maxIt = vlen
-	} else {
-		maxIt = l
-	}
-	uPosition = uPosition - 1 // The most significant bits are at the end
-	newBuffer := bd.New(bitarray.NewBitArray(l), l)
-	for i := uint64(0); i < maxIt; i++ {
-		lastBit, lastBitErr := psrc.coding.Strings.GetBit(uPosition - i)
-		if lastBitErr != nil { // getBit has gone wrong
-			return nil, lastBitErr
-		}
-		indexToUpdate := l - 1 - i
-		if lastBit {
-			newBuffer.SetBit(indexToUpdate)
-		} else {
-			newBuffer.ClearBit(indexToUpdate)
-		}
-	}
-
-	//0b0
-	//0as
-	for i := maxIt; i < l; i++ {
-
-	}
-	/*
-		for i := uint64(0); i < maxIt; i++ { // let's iterate for i = 0 up to l - 1 (l times)
-			// We start from the most significant bits
-			lastBit, lastBitErr := psrc.coding.Strings.GetBit(uPosition - i) // take the i-th bit of string(u)
-			if lastBitErr != nil {                                           // getBit has gone wrong
-				return nil, lastBitErr
-			}
-			indexToUpdate := l - 1 - i
-			if lastBit {
-				stringBuffer.SetBit(indexToUpdate)
-			} else {
-				stringBuffer.ClearBit(indexToUpdate)
-			}
-		}*/
-
-	return stringBuffer, nil
-}
-
-func shiftBuffer(stringBuffer *bd.BitData, shiftPos uint64) (*bd.BitData, error) {
-	l := stringBuffer.Len
-	shiftedBuffer := bd.New(bitarray.NewBitArray(l), l)
-	if shiftPos >= l {
-		return shiftedBuffer, nil
-	}
-	for i := uint64(0); i < l-shiftPos; i++ {
-		bit, err := stringBuffer.GetBit(i)
-		if err != nil {
-			return nil, err
-		}
-		if bit {
-			shiftedBuffer.SetBit(i + shiftPos)
-		}
-	}
-	return shiftedBuffer, nil
-}
-
-func (psrc *PSRC) FullPrefixSearch(prefix string) ([]string, error) {
-	return nil, nil
-}
-
 func (psrc *PSRC) checkInterface() {
 	checkFunc := func(search PrefixSearch) bool {
 		return true
@@ -460,4 +380,42 @@ func (psrc *PSRC) GetBitDataSize() interface{} {
 		psrc.isUncompressed.Len,
 		psrc.isStoredSuffix.Len,
 	}
+}
+
+// FullPrefixSearch, given a prefix *prefix* returns all the strings that start with that prefix.
+func (psrc *PSRC) FullPrefixSearch(prefix string) ([]string, error) {
+	var (
+		lenPrefix    = uint64(len(prefix) * 8) // |prefix|
+		totalStrings = uint64(len(psrc.strings))
+		stringBuffer = []string{}
+		prefixBuffer = []uint64{}
+	)
+
+	for i := uint64(0); i < totalStrings; i++ {
+		retrievalI, err := psrc.Retrieval(i, lenPrefix)
+		if err != nil {
+			return nil, err // if error was found
+		}
+		if retrievalI == prefix { // we found the first node having
+			prefixBuffer = append(prefixBuffer, i)
+		}
+	}
+	if len(prefixBuffer) == 0 {
+		return []string{}, nil
+	}
+
+	for _, index := range prefixBuffer {
+		stringLength, err := psrc.getStringLength(index)
+		fmt.Println(stringLength)
+		if err != nil {
+			return []string{}, err
+		}
+		prefixedString, err := psrc.Retrieval(index, stringLength)
+		if err != nil {
+			return []string{}, err
+		}
+		stringBuffer = append(stringBuffer, prefixedString)
+	}
+
+	return stringBuffer, nil
 }

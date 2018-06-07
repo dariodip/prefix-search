@@ -1,6 +1,7 @@
 package stringcoding
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -20,7 +21,19 @@ func TestPSRC_Retrieval(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-
+		{
+			"Last string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				uint64(2),
+				uint64(72),
+			},
+			"de",
+			false,
+		},
 		{
 			"0) error test",
 			fields{
@@ -205,6 +218,124 @@ func TestPSRC_Retrieval(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("len(got)= %d", len(got))
 				t.Errorf("PSRC.Retrieval() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPSRC_getStringLength(t *testing.T) {
+	type fields struct {
+		Epsilon float64
+		strings []string
+	}
+	type args struct {
+		i uint64
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    uint64
+		wantErr bool
+	}{
+		{
+			"Uncompressed string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				uint64(0),
+			},
+			uint64(48),
+			false,
+		},
+		{
+			"Compressed string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				uint64(1),
+			},
+			uint64(48),
+			false,
+		},
+		{
+			"Compressed string next to a compressed string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				uint64(2),
+			},
+			uint64(72),
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			psrc := NewPSRC(tt.fields.strings, tt.fields.Epsilon)
+			for i, s := range tt.fields.strings {
+				psrc.add(s, uint64(i))
+			}
+			got, err := psrc.getStringLength(tt.args.i)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("%s: PSRC.getStringLength() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("%s: PSRC.getStringLength() = %v, want %v", tt.name, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPSRC_FullPrefixSearch(t *testing.T) {
+	type fields struct {
+		Epsilon float64
+		strings []string
+	}
+	type args struct {
+		prefix string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []string
+		wantErr bool
+	}{
+
+		{
+			"Last string",
+			fields{
+				1.0,
+				[]string{"caso", "cat", "cena", "delfino"},
+			},
+			args{
+				"de",
+			},
+			[]string{"delfino"},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			psrc := NewPSRC(tt.fields.strings, tt.fields.Epsilon)
+			for i, s := range tt.fields.strings {
+				psrc.add(s, uint64(i))
+			}
+			got, err := psrc.FullPrefixSearch(tt.args.prefix)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Test: %s", tt.name)
+				t.Errorf("PSRC.FullPrefixSearch() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("%s: PSRC.FullPrefixSearch() = %v, want %v", tt.name, got, tt.want)
 			}
 		})
 	}
