@@ -172,9 +172,9 @@ func (s1 *BitData) GetDifferentSuffix(s2 *BitData) (*BitData, error) {
 // If something goes wrong, returns a nil pointer and an error.
 func (s1 *BitData) GetDifferentPrefix(s2 *BitData) (*BitData, error) {
 	var (
-		commonSuffixLen uint64                   // length of the common prefix
-		idx1 = uint64(0) // first bit of the first "bitted" string
-		idx2 = uint64(0) // first bit of the second "bitted" string
+		commonSuffixLen uint64      // length of the common prefix
+		idx1            = uint64(0) // first bit of the first "bitted" string
+		idx2            = uint64(0) // first bit of the second "bitted" string
 	)
 	if s1.bits == nil {
 		return nil, ErrNotInitBitData
@@ -297,6 +297,24 @@ func (s1 *BitData) BitToStringOfLengthL(l uint64) (string, error) {
 		return "", err
 	}
 	return bytes.NewBuffer(bt[:bytesCount]).String(), nil
+}
+
+func (s1 *BitData) GetFirstLBits(l uint64) (*BitData, error) {
+	var (
+		newBd = New(bitarray.NewBitArray(l), l)
+	)
+
+	for i := uint64(0); i < l; i++ {
+		lastBit, err := s1.GetBit(s1.Len - 1 - i)
+		if err != nil {
+			return nil, err
+		}
+		if lastBit {
+			newBd.SetBit(newBd.Len - 1 - i)
+		}
+	}
+	return newBd, nil
+
 }
 
 // Given a slice of string, GetTotalBitCount returns the

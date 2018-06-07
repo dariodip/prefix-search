@@ -5,7 +5,6 @@ import (
 	"github.com/dariodip/prefix-search/prefix-search/bitdata"
 	"github.com/golang-collections/go-datastructures/bitarray"
 	"github.com/stretchr/testify/assert"
-	"runtime"
 	"testing"
 )
 
@@ -30,7 +29,7 @@ func TestBitData_GetBit(t *testing.T) {
 		a.Nil(err, "Error should be nil")
 		a.Equal(checkBit, bit, "bit should be %s", checkBit)
 	}
-	t.Log(runtime.Caller(0))
+	//	t.Log(runtime.Caller(0))
 }
 
 func TestBitData_SetBit(t *testing.T) {
@@ -170,7 +169,7 @@ func TestGetDifferentPrefixWithSameLength(t *testing.T) {
 	a.NotEqual(b1, b2, "Bitarrays are different")
 
 	// The different prefix should be "0110000"
-	expectedPrefix := []bool{false, false, false, false, true, true, false, }
+	expectedPrefix := []bool{false, false, false, false, true, true, false}
 	receivedPrefix, err := b1.GetDifferentPrefix(b2)
 	a.Nil(err, "Unexpected error")
 	a.Equal(uint64(len(expectedPrefix)), receivedPrefix.Len, "Prefix should be of %d bits",
@@ -216,6 +215,7 @@ func TestGetDifferentPrefixWithDifferentLength(t *testing.T) {
 		a.Equal(expectedPrefix[i], receivedPrefixBit, "Prefix should be as expected")
 	}
 }
+
 // Unit test in order to check out if the method bitToByte
 // works on a string of 4 characters
 func TestBitToByte(t *testing.T) {

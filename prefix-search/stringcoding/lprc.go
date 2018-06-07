@@ -8,9 +8,9 @@ import (
 )
 
 type LPRCBitDataSize struct {
-	StringsSize 	   uint64
-	StartsSize 		   uint64
-	LengthsSize 	   uint64
+	StringsSize        uint64
+	StartsSize         uint64
+	LengthsSize        uint64
 	IsUncompressedSize uint64
 }
 
@@ -96,7 +96,7 @@ func (lprc *LPRC) add(s string, index uint64) error {
 	}
 
 	// 4: append different suffix' length to Lengths
-	prefixLen := bdS.Len - stringToAdd.Len // get suffix length
+	prefixLen := bdS.Len - stringToAdd.Len // our string - different suffix
 	if coding.LastString != nil {
 		errAppUL := coding.encodeEliasGamma(calcLen(prefixLen, coding.LastString.Len))
 		if errAppUL != nil { // as above...
@@ -343,7 +343,7 @@ func (lprc *LPRC) checkInterface() {
 }
 
 // Returns the size in bits of the BitData used to compress the strings
-func (lprc *LPRC) GetBitDataSize() *LPRCBitDataSize {
+func (lprc *LPRC) GetBitDataSize() interface{} {
 	return &LPRCBitDataSize{
 		lprc.coding.Strings.Len,
 		lprc.coding.Starts.Len,
