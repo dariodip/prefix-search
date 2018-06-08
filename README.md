@@ -20,6 +20,73 @@ In order to install all the required dependencies, in the project root directory
 make install
 ```
 
+## Usage
+Prefix search can be used by 3 command:
+* **console**: 
+```
+prefix-search console --help                                                                12:35   08.06.18 
+Using "console" you can start interactive console that gives you the opportunity
+to, given a preloaded dataset, to find prefixes interactively.
+
+Usage:
+  prefix-search console [flags]
+
+Flags:
+  -a, --algorithm string    Algorithmto use (default "lprc")
+  -e, --epsilon float       Epsilon is the parametergiven to the algorithm in order to decide how many bits compress in the trie.
+  -h, --help                help for console
+  -i, --input_file string   Input file containing all the word to build up the dictionary.
+```
+* **lprc**:
+```
+prefix-search lprc --help
+lprc (Locality Preserving Rear Coding) is an algorithm designed by Paolo Ferragina and Rossano Venturini
+in their paper "Compressed Cache-Oblivious String B-Tree". 
+
+Our implementation takes in input: 
+	- a file containing all the worlds to add to the dictionary (-i);
+	- a file containing all the prefixes to search on the built dictionary (-p).
+	- the epsilon to use in order to build our structure
+
+All the results will be saved into a json file.
+
+Usage:
+  prefix-search lprc [flags]
+
+Flags:
+  -e, --epsilon float         Epsilon is the parametergiven to the algorithm in order to decide how many bits compress in the trie.
+  -h, --help                  help for lprc
+  -i, --input_file string     Input file containing all the word to build up the dictionary.
+  -p, --input_p_file string   Input file containing all the prefix to search on the dictionary.
+  -o, --output_file string    Output file containing the final output of lprc, with information about the memory usage and the time elapsed.
+                              Default <word filename>-<prefix file name>-<epsilon>.json
+  -v, --verbose               Detailed Output
+```
+* **psrc**:
+```
+prefix-search psrc --help 
+psrc (Prefix-Suffix Rear Coding) is an algorithm designed by Mattia Tomeo and Dario Di Pasquale, 
+inspired by the paper "Compressed Cache-Oblivious String B-Tree". 
+
+Our implementation takes in input two files: 
+	- a file containing all the worlds to add to the dictionary (-i);
+	- a file containing all the prefixes to search on the built dictionary (-p).
+
+All the results will be saved into a json file.
+
+Usage:
+  prefix-search psrc [flags]
+
+Flags:
+  -e, --epsilon float         Epsilon is the parametergiven to the algorithm in order to decide how many bits compress in the trie.
+  -h, --help                  help for psrc
+  -i, --input_file string     Input file containing all the word to build up the dictionary
+  -p, --input_p_file string   Input file containing all the prefix to search on the dictionary
+  -o, --output_file string    Output file containing the final output of lprc, with information about the memory usage and the time elapsed.
+                              Default <word filename>-<prefix file name>-<epsilon>.json
+  -v, --verbose               Detailed Output
+```
+
 ## Running the tests
 
 All the test are built using the package [testing](https://golang.org/pkg/testing/).
