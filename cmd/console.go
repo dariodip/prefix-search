@@ -19,7 +19,7 @@ var consoleCmd = &cobra.Command{
 	Use:   "console",
 	Short: "Start interactive console",
 	Long: `Using "console" you can start interactive console that gives you the opportunity
-to, given a preloaded dataset, to find more prefixes interactively.`,
+to, given a preloaded dataset, to find prefixes interactively.`,
 	Run: runConsole,
 }
 
@@ -90,7 +90,9 @@ func runConsole(cmd *cobra.Command, args []string) {
 		startTime = time.Now()
 		strings, err := impl.FullPrefixSearch(prefix)
 		if err != nil {
-			fmt.Errorf("error: %s", err)
+			fmt.Println(fmt.Errorf("error: %s", err))
+			fmt.Print(consoleMarker)
+			continue
 		}
 		fmt.Printf("Found %d strings in %v \n", len(strings), time.Since(startTime))
 		if len(strings) == 0 {
