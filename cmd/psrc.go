@@ -15,13 +15,13 @@ var psrcCmd = &cobra.Command{
 	Use:   "psrc",
 	Short: "Run psrc algorithm",
 	Long: `psrc (Prefix-Suffix Rear Coding) is an algorithm designed by Mattia Tomeo and Dario Di Pasquale, 
-ispired by the paper "Compressed Cache-Oblivious String B-Tree". 
+inspired by the paper "Compressed Cache-Oblivious String B-Tree". 
 
 Our implementation takes in input two files: 
 	- a file containing all the worlds to add to the dictionary (-i);
 	- a file containing all the prefixes to search on the built dictionary (-p).
 
-TODO...
+All the results will be saved into a json file.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		psrcBenchmark()

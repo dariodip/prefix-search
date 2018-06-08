@@ -30,9 +30,7 @@ Our implementation takes in input:
 	- a file containing all the prefixes to search on the built dictionary (-p).
 	- the epsilon to use in order to build our structure
 
-All the results will be saved into a json file, called  <file name>-<prefix filename>-<epsilon>.json,
-inside the results directory.
-TODO...
+All the results will be saved into a json file.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		lprcBenchmark()
