@@ -35,7 +35,7 @@ make [VERSION=<version>] <platforms>
 where the platforms are `windows`, `linux` and `darwin`. If not specified, the value of the parameter `VERSION` will be
 `vlatest`.
 
-If you want create an executable for all the platforms, then simply run:
+If you want create an executable for each platform, then simply run:
 ```
 make [VERSION=<version>] release
 ```
