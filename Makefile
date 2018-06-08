@@ -1,4 +1,3 @@
-
 PKGS := $(shell go list ./... | grep -v /vendor)
 
 .PHONY: test
@@ -11,9 +10,21 @@ install:
 
 BIN_DIR := $(GOPATH)/bin
 
-BINARY := prefsearch
+BINARY := prefix-search
 VERSION ?= vlatest
 
-release: test
+.PHONY: build
+build: install test
+	go build -o $BIN_DIR
+
+PLATFORMS := windows linux darwin
+os = $(word 1, $@)
+
+.PHONY: $(PLATFORMS)
+$(PLATFORMS):
 	mkdir -p release
-	GOOS=linux GOARCH=amd64 go build -o release/$(BINARY)-v1.0.0
+	GOOS=$(os) GOARCH=amd64 go build -o release/$(BINARY)-$(VERSION)-$(os)-amd64
+
+.PHONY: release
+release: windows linux darwin
+

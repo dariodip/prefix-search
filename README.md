@@ -13,6 +13,7 @@ With these instructions you will get a copy of the project up and running on you
 You need make and [Golang](https://golang.org/) installed in order to run all the command listed next. 
 
 You need [Python 3](https://www.python.org/) if you want to run our scripts.
+
 ### Installing
 
 In order to install all the required dependencies, in the project root directory run the following:
@@ -20,6 +21,24 @@ In order to install all the required dependencies, in the project root directory
 make install
 ```
 
+In order to create an executable, in the project root directory run the followings:
+```
+make build
+```
+this will install all the dependecies, run all the tests and create and executable inside your `$GOPATH/bin` directory.
+
+## Release
+If you want to create an executable for a specific platform, run the following:
+```
+make [VERSION=<version>] <platforms>
+```
+where the platforms are `windows`, `linux` and `darwin`. If not specified, the value of the parameter `VERSION` will be
+`vlatest`.
+
+If you want create an executable for all the platforms, then simply run:
+```
+make [VERSION=<version>] release
+```
 ## Usage
 Prefix search can be used by 3 command:
 * **console**: 
