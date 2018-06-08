@@ -293,6 +293,10 @@ func (psrc *PSRC) Retrieval(u uint64, l uint64) (string, error) {
 			} // end else !isStoredSuffix
 		} // end for
 	} //end else !isUncompressedStringU
+
+	if stringBuffer.Len < l { // Our string is too short
+		return "", ErrTooShortString
+	}
 	firstLBits, err := stringBuffer.GetFirstLBits(l)
 	if err != nil {
 		return "", err
@@ -383,7 +387,7 @@ func (psrc *PSRC) FullPrefixSearch(prefix string) ([]string, error) {
 
 	for i := uint64(0); i < totalStrings; i++ {
 		retrievalI, err := psrc.Retrieval(i, lenPrefix)
-		if err != nil {
+		if err != nil && err != ErrTooShortString {  // If the string is too short, then we simply skip it
 			return nil, err // if error was found
 		}
 		if retrievalI == prefix { // we found the first node having
