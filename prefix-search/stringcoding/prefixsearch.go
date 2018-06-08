@@ -5,6 +5,6 @@ type PrefixSearch interface {
 	add(string, uint64) error
 	Retrieval(uint64, uint64) (string, error)
 	FullPrefixSearch(prefix string) ([]string, error)
+	GetBitDataSize() map[string]uint64
 	checkInterface()
-	GetBitDataSize() interface{}
 }

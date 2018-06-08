@@ -368,6 +368,18 @@ func TestLPRC_FullPrefixSearch(t *testing.T) {
 			[]string{"delfino"},
 			false,
 		},
+		{
+			"Last string",
+			fields{
+				1.0,
+				[]string{"caso", "cat", "cena", "delfino"},
+			},
+			args{
+				"delfino",
+			},
+			[]string{"delfino"},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

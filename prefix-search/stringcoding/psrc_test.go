@@ -1,8 +1,8 @@
 package stringcoding
 
 import (
-	"testing"
 	"reflect"
+	"testing"
 )
 
 func TestPSRC_Retrieval(t *testing.T) {
@@ -308,7 +308,78 @@ func TestPSRC_FullPrefixSearch(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-
+		{
+			"Last string",
+			fields{
+				1,
+				[]string{"casotto", "cisonostatierrori", "cuz", "delfino"},
+			},
+			args{
+				"de",
+			},
+			[]string{"delfino"},
+			false,
+		},
+		{
+			"Full string",
+			fields{
+				1,
+				[]string{"casotto", "cisonostatierrori", "cuz", "delfino"},
+			},
+			args{
+				"delfino",
+			},
+			[]string{"delfino"},
+			false,
+		},
+		{
+			"Uncompressed string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				"ca",
+			},
+			[]string{"caso"},
+			false,
+		},
+		{
+			"Compressed string",
+			fields{
+				1.0,
+				[]string{"caso", "cena", "delfino"},
+			},
+			args{
+				"ce",
+			},
+			[]string{"cena"},
+			false,
+		},
+		{
+			"Two strings",
+			fields{
+				1.0,
+				[]string{"caso", "cat", "cena", "delfino"},
+			},
+			args{
+				"ca",
+			},
+			[]string{"caso", "cat"},
+			false,
+		},
+		{
+			"Compressed string next to a compressed one",
+			fields{
+				1.0,
+				[]string{"caso", "cat", "cena", "delfino"},
+			},
+			args{
+				"no",
+			},
+			[]string{},
+			false,
+		},
 		{
 			"Last string",
 			fields{
@@ -319,18 +390,6 @@ func TestPSRC_FullPrefixSearch(t *testing.T) {
 				"de",
 			},
 			[]string{"delfino"},
-			false,
-		},
-		{
-			"First two strings",
-			fields{
-				1.0,
-				[]string{"caso", "cat", "cena", "delfino"},
-			},
-			args{
-				"ca",
-			},
-			[]string{"caso", "cat"},
 			false,
 		},
 	}

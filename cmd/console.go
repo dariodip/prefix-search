@@ -61,9 +61,8 @@ func runConsole(cmd *cobra.Command, args []string) {
 		lprcImpl := stringcoding.NewLPRC(wr.Strings, epsilon)
 		impl = &lprcImpl
 	} else if algorithm == PSRCconst {
-		// TODO
-		fmt.Errorf("algorithm not yet implemented \n")
-		os.Exit(1)
+		psrcImpl := stringcoding.NewPSRC(wr.Strings, epsilon)
+		impl = &psrcImpl
 	} else {
 		fmt.Errorf(`insert an algorithm between "lprc" and "psrc" \n`)
 		os.Exit(1)
@@ -107,10 +106,10 @@ func runConsole(cmd *cobra.Command, args []string) {
 					text := scanner.Text()
 					if len(text) > 1 || (len(text) == 1 && text != "q") {
 						fmt.Println(usage)
-					} else if text == "q" {  // The user want to end the visualization
+					} else if text == "q" { // The user want to end the visualization
 						endPrint = true
 						break
-					} else {  // The user clicked only enter
+					} else { // The user clicked only enter
 						break
 					}
 				}

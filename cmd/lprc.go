@@ -1,13 +1,22 @@
 package cmd
 
 import (
-	"github.com/dariodip/prefix-search/word-reader"
-	"github.com/spf13/cobra"
 	"fmt"
 	"github.com/dariodip/prefix-search/prefix-search/stringcoding"
-	"time"
+	"github.com/dariodip/prefix-search/word-reader"
+	"github.com/spf13/cobra"
 	"os"
+	"time"
 )
+
+type LPRCResult struct {
+	InitTime             float64
+	Epsilon              float64
+	StructureSize        stringcoding.LPRCBitDataSize
+	UncompressedDataSize uint64
+	PrefixResult         []ResultRow
+	TotalSearchTime      float64
+}
 
 // lprcCmd represents the lprc command
 var lprcCmd = &cobra.Command{
@@ -49,8 +58,8 @@ func init() {
 
 	lprcCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Detailed Output ")
 
-	lprcCmd.Flags().StringVarP(&outputFile, "output_file", "o", "", "Output file" +
-		" containing the final output of lprc, with information about the memory usage and the time elapsed.\n" +
+	lprcCmd.Flags().StringVarP(&outputFile, "output_file", "o", "", "Output file"+
+		" containing the final output of lprc, with information about the memory usage and the time elapsed.\n"+
 		"Default <word filename>-<prefix file name>-<epsilon>.json")
 	lprcCmd.MarkFlagFilename("output_file")
 }
@@ -71,7 +80,7 @@ func lprcBenchmark() {
 	}
 
 	bdSize := lprcImpl.GetBitDataSize()
-	totalBitSize := bdSize.StringsSize + bdSize.StartsSize + bdSize.LengthsSize + bdSize.IsUncompressedSize
+	totalBitSize := bdSize["StringsSize"] + bdSize["StartsSize"] + bdSize["LengthsSize"] + bdSize["IsUncompressedSize"]
 	fmt.Printf("Initialization time:   %v\n", initTime)
 	fmt.Printf("Size of the structure: %d bits\n", totalBitSize)
 	fmt.Println()
@@ -83,11 +92,10 @@ func lprcBenchmark() {
 	finalResults := &Result{
 		InitTime:             toMilliseconds(initTime),
 		Epsilon:              lprcImpl.Epsilon,
-		StructureSize:        *bdSize,
+		StructureSize:        bdSize,
 		UncompressedDataSize: getBitSize(wr.Strings),
 	}
 	defer saveToFile(finalResults, outputFile)
-
 
 	var searchTime time.Time
 	var elapsedTime time.Duration

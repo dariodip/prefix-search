@@ -1,21 +1,20 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"time"
 	"path/filepath"
 	"strings"
-	"encoding/json"
-	"github.com/dariodip/prefix-search/prefix-search/stringcoding"
+	"time"
 )
 
 var (
 	VERSION         string
 	inputFile       string
 	inputPrefixFile string
-	outputFile		string
+	outputFile      string
 	algorithm       string
 	epsilon         float64
 	verbose         bool
@@ -31,8 +30,8 @@ type ResultRow struct {
 
 type Result struct {
 	InitTime             float64
-	Epsilon				 float64
-	StructureSize        stringcoding.LPRCBitDataSize
+	Epsilon              float64
+	StructureSize        map[string]uint64
 	UncompressedDataSize uint64
 	PrefixResult         []ResultRow
 	TotalSearchTime      float64
@@ -40,7 +39,7 @@ type Result struct {
 
 func (res *Result) addResultRow(prefix string, wordCount int, searchTime time.Duration) {
 	res.PrefixResult = append(res.PrefixResult,
-		ResultRow{prefix, wordCount, toMilliseconds(searchTime),})
+		ResultRow{prefix, wordCount, toMilliseconds(searchTime)})
 }
 
 var rootCmd = &cobra.Command{

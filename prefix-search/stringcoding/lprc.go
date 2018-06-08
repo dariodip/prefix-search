@@ -343,11 +343,12 @@ func (lprc *LPRC) checkInterface() {
 }
 
 // Returns the size in bits of the BitData used to compress the strings
-func (lprc *LPRC) GetBitDataSize() interface{} {
-	return &LPRCBitDataSize{
-		lprc.coding.Strings.Len,
-		lprc.coding.Starts.Len,
-		lprc.coding.Lengths.Len,
-		lprc.isUncompressed.Len,
-	}
+func (lprc *LPRC) GetBitDataSize() map[string]uint64 {
+	sizes := make(map[string]uint64)
+	sizes["StringSize"] = lprc.coding.Strings.Len
+	sizes["StartsSize"] = lprc.coding.Starts.Len
+	sizes["LenghtsSize"] = lprc.coding.Lengths.Len
+	sizes["IsUncompressedSize"] = lprc.isUncompressed.Len
+
+	return sizes
 }

@@ -372,16 +372,6 @@ func (psrc *PSRC) String() string {
 		psrc, psrc.coding, psrc.Epsilon, psrc.c, psrc.strings, psrc.isUncompressed, psrc.isStoredSuffix)
 }
 
-func (psrc *PSRC) GetBitDataSize() interface{} {
-	return &PSRCBitDataSize{
-		psrc.coding.Strings.Len,
-		psrc.coding.Starts.Len,
-		psrc.coding.Lengths.Len,
-		psrc.isUncompressed.Len,
-		psrc.isStoredSuffix.Len,
-	}
-}
-
 // FullPrefixSearch, given a prefix *prefix* returns all the strings that start with that prefix.
 func (psrc *PSRC) FullPrefixSearch(prefix string) ([]string, error) {
 	var (
@@ -418,4 +408,15 @@ func (psrc *PSRC) FullPrefixSearch(prefix string) ([]string, error) {
 	}
 
 	return stringBuffer, nil
+}
+
+func (psrc *PSRC) GetBitDataSize() map[string]uint64 {
+	sizes := make(map[string]uint64)
+	sizes["StringSize"] = psrc.coding.Strings.Len
+	sizes["StartsSize"] = psrc.coding.Starts.Len
+	sizes["LenghtsSize"] = psrc.coding.Lengths.Len
+	sizes["IsUncompressedSize"] = psrc.isUncompressed.Len
+	sizes["PrefixOrSuffixSize"] = psrc.isStoredSuffix.Len
+
+	return sizes
 }
