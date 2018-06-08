@@ -104,6 +104,13 @@ func TestCoding_decodeIthEliasGamma(t *testing.T) {
 			false,
 		},
 		{
+			"third string value",
+			fields{[]string{"ciao", "cic", "delfino"}, 20},
+			args{2},
+			uint64(27),
+			false,
+		},
+		{
 			"error test",
 			fields{[]string{"ciao", "cic"}, 20},
 			args{3},

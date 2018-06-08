@@ -7,6 +7,13 @@ import (
 	"sort"
 )
 
+type LPRCBitDataSize struct {
+	StringsSize        uint64
+	StartsSize         uint64
+	LengthsSize        uint64
+	IsUncompressedSize uint64
+}
+
 type LPRC struct {
 	coding                     *Coding
 	Epsilon                    float64
@@ -41,7 +48,7 @@ func sortLexigographically(strings []string) []string {
 	return strings
 }
 
-func (lprc *LPRC) PopulateLPRC() error {
+func (lprc *LPRC) Populate() error {
 	for i, s := range lprc.strings {
 		if err := lprc.add(s, uint64(i)); err != nil {
 			return err
@@ -89,7 +96,7 @@ func (lprc *LPRC) add(s string, index uint64) error {
 	}
 
 	// 4: append different suffix' length to Lengths
-	prefixLen := bdS.Len - stringToAdd.Len // get suffix length
+	prefixLen := bdS.Len - stringToAdd.Len // our string - different suffix
 	if coding.LastString != nil {
 		errAppUL := coding.encodeEliasGamma(calcLen(prefixLen, coding.LastString.Len))
 		if errAppUL != nil { // as above...
@@ -111,7 +118,6 @@ func (lprc *LPRC) add(s string, index uint64) error {
 // Retrieval(u, l) returns the prefix of the string string(u) with length l.
 // So the returned prefix ends up in the edge (p(u), u).
 func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
-
 	var (
 		stringBuffer = bd.New(bitarray.NewBitArray(l), l) // let's create a buffer in order to store our prefix
 	)
@@ -127,7 +133,7 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 				l = ll // we can only return a string as big as our string
 			}
 		} // end else
-		err := lprc.populateBuffer(stringBuffer, l, u, uint64(0)) // we get the first l bits of that string
+		err := lprc.populateBuffer(stringBuffer, l, u, uint64(0), l) // we get the first l bits of that string
 		if err != nil {
 			panic(err)
 		}
@@ -149,8 +155,8 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 		if err != nil {                                                   // in order to extract the size of string(v)
 			return "", err
 		}
-		lengthStringV := vNextStarts - vStarts                   // that's the length of string(v)
-		err = lprc.populateBuffer(stringBuffer, l, vPosition, 0) // insert the first l bits of string(v) in the buffer
+		lengthStringV := vNextStarts - vStarts                                  // that's the length of string(v)
+		err = lprc.populateBuffer(stringBuffer, l, vPosition, 0, lengthStringV) // insert the first l bits of string(v) in the buffer
 		if err != nil {
 			panic(err)
 		}
@@ -174,7 +180,7 @@ func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 			if ni >= l {
 				continue // first l bits are the same, so we can skip
 			} else {
-				err := lprc.populateBuffer(stringBuffer, l, i, ni) // populate the buffer
+				err := lprc.populateBuffer(stringBuffer, l, i, ni, lengthI) // populate the buffer
 				if err != nil {
 					return "", err
 				}
@@ -202,8 +208,35 @@ func (lprc *LPRC) getLengthInStrings(i uint64) (uint64, error) {
 	return startPositionSuccI - startPositionI, nil
 }
 
-func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, ni uint64) error {
-	var uPosition uint64
+func (lprc *LPRC) getStringLength(i uint64) (uint64, error) {
+	isUncomp, err := lprc.isUncompressed.GetBit(i)
+	if err != nil {
+		return uint64(0), err
+	}
+	if i == uint64(0) || isUncomp { // uncompressed string
+		return lprc.getLengthInStrings(i)
+	}
+	lengthStringPI, err := lprc.getStringLength(i - 1) // length of the parent
+	if err != nil {
+		return uint64(0), err
+	}
+	li, err := lprc.coding.decodeIthEliasGamma(i) // li is the number of bits to remove in string(p(i)) in order to
+	if err != nil {                               // obtain the prefix for string(i)
+		return uint64(0), err
+	}
+	ni := lengthStringPI - li
+	lengthI, err := lprc.getLengthInStrings(i) // lengthI is the number of bits stored in Strings
+	if err != nil {
+		return uint64(0), err
+	} // our string length is the number of bits stored in String +
+	return lengthI + ni, nil // number of bit saved by the coding
+}
+
+func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, ni uint64, llen uint64) error {
+	var (
+		uPosition uint64
+		maxIt     uint64
+	)
 	if (u + 1) == uint64(len(lprc.strings)) {
 		uPosition = lprc.coding.Strings.Len // u is the last string memorized!
 	} else {
@@ -213,8 +246,13 @@ func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, n
 			return err
 		}
 	}
-	uPosition = uPosition - 1           // The most significant bits are at the end
-	for i := uint64(0); i < l-ni; i++ { // let's iterate for i = 0 up to l - 1 (l times)
+	if llen < l {
+		maxIt = llen
+	} else {
+		maxIt = l - ni
+	}
+	uPosition = uPosition - 1            // The most significant bits are at the end
+	for i := uint64(0); i < maxIt; i++ { // let's iterate for i = 0 up to l - 1 (l times)
 		// We start from the most significant bits
 		lastBit, lastBitErr := lprc.coding.Strings.GetBit(uPosition - i) // take the i-th bit of string(u)
 		if lastBitErr != nil {                                           // getBit has gone wrong
@@ -233,6 +271,56 @@ func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, n
 	return nil
 }
 
+// FullPrefixSearch, given a prefix *prefix* returns all the strings that start with that prefix.
+func (lprc *LPRC) FullPrefixSearch(prefix string) ([]string, error) {
+	var (
+		l            uint64                    // first node having *prefix* as prefix
+		r            uint64                    // last node having *prefix* as prefix
+		lenPrefix    = uint64(len(prefix) * 8) // |prefix|
+		totalStrings = uint64(len(lprc.strings))
+		stringBuffer = []string{}
+		found        = false
+	)
+
+	for i := uint64(0); i < totalStrings; i++ {
+		if retrievalI, err := lprc.Retrieval(i, lenPrefix); err != nil {
+			return nil, err // if error was found
+		} else if retrievalI == prefix { // we found the first node having
+			l = i // i is the first string having prefix as prefix
+			found = true
+			break
+		}
+	}
+	if !found {
+		return []string{}, nil
+	}
+
+	for i := l + 1; i < totalStrings; i++ {
+		if retrievalI, err := lprc.Retrieval(i, lenPrefix); err != nil {
+			return nil, err // if error was found
+		} else if retrievalI != prefix { // we found the first node that does not have prefix as prefix
+			r = i - 1 // r is the last node having prefix as prefix
+			break
+		}
+	}
+	if r < l { // only one string
+		r = l
+	}
+
+	for i := l; i <= r; i++ {
+		stringILen, err := lprc.getStringLength(i)
+		if err != nil {
+			return nil, err
+		}
+		s, err := lprc.Retrieval(i, stringILen)
+		if err != nil {
+			return nil, err
+		}
+		stringBuffer = append(stringBuffer, s)
+	}
+	return stringBuffer, nil
+}
+
 func saveUncompressed(stringToAdd *bd.BitData, bdS *bd.BitData, lprc *LPRC) bool {
 	return stringToAdd.Len == bdS.Len || float64(lprc.latestCompressedBitWritten) > lprc.c*float64(bdS.Len)
 }
@@ -240,4 +328,27 @@ func saveUncompressed(stringToAdd *bd.BitData, bdS *bd.BitData, lprc *LPRC) bool
 func (lprc *LPRC) String() string {
 	return fmt.Sprintf(`type:%T coding:%v, Epsilon:%v, c:%v, strings:%v, isUncompressed:%v`,
 		lprc, lprc.coding, lprc.Epsilon, lprc.c, lprc.strings, lprc.isUncompressed)
+}
+
+// it fails if LPRC type does not implements PrefixSearch interface
+// it is done by the compiler
+func (lprc *LPRC) checkInterface() {
+	checkFunc := func(search PrefixSearch) bool {
+		return true
+	}
+	var sPs PrefixSearch
+	sLprc := NewLPRC([]string{}, 1.0)
+	sPs = &sLprc
+	checkFunc(sPs)
+}
+
+// Returns the size in bits of the BitData used to compress the strings
+func (lprc *LPRC) GetBitDataSize() map[string]uint64 {
+	sizes := make(map[string]uint64)
+	sizes["StringSize"] = lprc.coding.Strings.Len
+	sizes["StartsSize"] = lprc.coding.Starts.Len
+	sizes["LenghtsSize"] = lprc.coding.Lengths.Len
+	sizes["IsUncompressedSize"] = lprc.isUncompressed.Len
+
+	return sizes
 }
