@@ -17,6 +17,9 @@ var (
 	outputFile      string
 	algorithm       string
 	epsilon         float64
+	min_epsilon     float64
+	max_epsilon     float64
+	step            float64
 	verbose         bool
 	LPRCconst       = "lprc"
 	PSRCconst       = "psrc"
@@ -94,6 +97,23 @@ func getFileName(path string) string {
 
 // Saves to a file all the result memorized in res
 func saveToFile(res *Result, filename string) {
+	fp, err := os.Create(filename)
+	defer fp.Close()
+
+	if err != nil {
+		fmt.Printf("Cannot open file %s. %s\n", filename, err)
+	} else {
+		encodedResults, err := json.Marshal(res)
+		if err != nil {
+			fmt.Printf("Cannot save file %s. %s\n", filename, err)
+		} else {
+			fp.Write(encodedResults)
+		}
+	}
+}
+
+// Saves to a file all the result memorized in res
+func saveAllToFile(res []*Result, filename string) {
 	fp, err := os.Create(filename)
 	defer fp.Close()
 

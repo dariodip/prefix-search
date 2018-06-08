@@ -33,7 +33,7 @@ func init() {
 
 	consoleCmd.Flags().StringVarP(&algorithm, "algorithm", "a", "lprc", "Algorithm"+
 		"to use")
-	consoleCmd.MarkFlagFilename("algorithm")
+	consoleCmd.MarkFlagRequired("algorithm")
 
 	consoleCmd.Flags().Float64VarP(&epsilon, "epsilon", "e", 0, "Epsilon is the parameter"+
 		"given to the algorithm in order to decide how many bits compress in the trie.")
