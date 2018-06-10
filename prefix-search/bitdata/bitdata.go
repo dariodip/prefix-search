@@ -1,4 +1,4 @@
-\\ Package bitdata contains types and methods in order to deal with array of bits
+// Package bitdata contains types and methods in order to deal with array of bits
 package bitdata
 
 import (
