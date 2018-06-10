@@ -17,9 +17,7 @@ var (
 	outputFile      string
 	algorithm       string
 	epsilon         float64
-	min_epsilon     float64
-	max_epsilon     float64
-	step            float64
+	epsilonList     []string
 	verbose         bool
 	LPRCconst       = "lprc"
 	PSRCconst       = "psrc"
