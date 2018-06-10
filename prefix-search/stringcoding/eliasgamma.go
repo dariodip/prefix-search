@@ -7,12 +7,12 @@ import (
 )
 
 var (
-	ErrEmptyString = errors.New("Elias Gamma coding is undefined for the empty string")
+	// ErrEmptyString is returned when you are trying to access to an empty string using Elias Gamma's methods
+	ErrEmptyString = errors.New("elias Gamma coding is undefined for the empty string")
 )
 
 // getEliasGammaLength computes the length of the Elias Gamma coding
 // on the string set.
-// TODO [optimization] GetLenthInBit called twice for each string
 func getEliasGammaLength(strings []string) (uint64, error) {
 	count := uint64(0)
 	for _, s := range strings {

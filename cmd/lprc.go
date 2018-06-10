@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// LPRCResult struct contains all the values for the test (e.g. time, size, etc).
 type LPRCResult struct {
 	InitTime             float64
 	Epsilon              float64
@@ -64,11 +65,11 @@ func init() {
 
 func lprcBenchmark() {
 	// load words
-	wr := word_reader.New(inputFile)
+	wr := wordreader.New(inputFile)
 	wr.ReadLines()
 
 	// load prefix
-	wrp := word_reader.New(inputPrefixFile)
+	wrp := wordreader.New(inputPrefixFile)
 	wrp.ReadLines()
 
 	lprcImpl, initTime, err := initLPRC(wr.Strings, epsilon)

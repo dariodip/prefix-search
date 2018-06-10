@@ -55,11 +55,11 @@ func init() {
 
 func psrcBenchmark() {
 	// load words
-	wr := word_reader.New(inputFile)
+	wr := wordreader.New(inputFile)
 	wr.ReadLines()
 
 	// load prefix
-	wrp := word_reader.New(inputPrefixFile)
+	wrp := wordreader.New(inputPrefixFile)
 	wrp.ReadLines()
 
 	psrcImpl, initTime, err := initPSRC(wr.Strings, epsilon)

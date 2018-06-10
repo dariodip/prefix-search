@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	// VERSION is the version of the build
 	VERSION         string
 	inputFile       string
 	inputPrefixFile string
@@ -23,12 +24,14 @@ var (
 	PSRCconst       = "psrc"
 )
 
+// ResultRow is a struct containing result for a single prefix search run
 type ResultRow struct {
 	Prefix            string
 	PrefixedWordCount int
 	SearchTime        float64
 }
 
+// Result is a struct containing information about a run of search
 type Result struct {
 	InitTime             float64
 	Epsilon              float64
@@ -54,6 +57,7 @@ Check out our GitHub repository for more info: https://github.com/dariodip/prefi
 	Run: run,
 }
 
+// Execute runs the console
 func Execute(version string) {
 
 	VERSION = version
@@ -74,15 +78,15 @@ func updateResultTemplate(verbose bool, stringsCount int) func(string) {
 		return func(result string) {
 			fmt.Printf(result)
 		}
-	} else {
-		idx := 1
-		return func(result string) {
-			fmt.Printf("\rQuering prefix %d on %d", idx, stringsCount)
-			if idx == stringsCount {
-				fmt.Println()
-			} else {
-				idx++
-			}
+	}
+
+	idx := 1
+	return func(result string) {
+		fmt.Printf("\rQuering prefix %d on %d", idx, stringsCount)
+		if idx == stringsCount {
+			fmt.Println()
+		} else {
+			idx++
 		}
 	}
 }

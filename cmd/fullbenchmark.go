@@ -57,11 +57,11 @@ func init() {
 func fullBenchmark() {
 
 	// load words
-	wr := word_reader.New(inputFile)
+	wr := wordreader.New(inputFile)
 	wr.ReadLines()
 
 	// load prefix
-	wrp := word_reader.New(inputPrefixFile)
+	wrp := wordreader.New(inputPrefixFile)
 	wrp.ReadLines()
 
 	if outputFile == "" { // no output file specified
@@ -103,7 +103,8 @@ func fullBenchmark() {
 			impl = psrcImpl
 			initTime = iTime
 		} else {
-			fmt.Errorf(`insert an algorithm between "lprc" and "psrc" \n`)
+			err := fmt.Errorf(`insert an algorithm between "lprc" and "psrc" \n`)
+			fmt.Println(err)
 			os.Exit(1)
 		}
 

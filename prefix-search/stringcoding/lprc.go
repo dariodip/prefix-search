@@ -7,6 +7,7 @@ import (
 	"sort"
 )
 
+// LPRCBitDataSize contains the size of all the data structures
 type LPRCBitDataSize struct {
 	StringsSize        uint64
 	StartsSize         uint64
@@ -14,6 +15,7 @@ type LPRCBitDataSize struct {
 	IsUncompressedSize uint64
 }
 
+// LPRC contains all the data structures to run LPRC algorithm
 type LPRC struct {
 	coding                     *Coding
 	Epsilon                    float64
@@ -23,7 +25,7 @@ type LPRC struct {
 	isUncompressed             *bd.BitData
 }
 
-// LPRC (Locality Preserving Rear Coding) is a storage method
+// NewLPRC returns a LPRC (Locality Preserving Rear Coding): a storage method
 // based on RC (Rear Coding) that stores a string s in an
 // uncompressed way if the latest c|s| bits do not contain
 // an uncompressed string.
@@ -48,6 +50,7 @@ func sortLexigographically(strings []string) []string {
 	return strings
 }
 
+// Populate populates all the trie
 func (lprc *LPRC) Populate() error {
 	for i, s := range lprc.strings {
 		if err := lprc.add(s, uint64(i)); err != nil {
@@ -115,7 +118,7 @@ func (lprc *LPRC) add(s string, index uint64) error {
 	return nil
 }
 
-// Retrieval(u, l) returns the prefix of the string string(u) with length l.
+// Retrieval (u, l) returns the prefix of the string string(u) with length l.
 // So the returned prefix ends up in the edge (p(u), u).
 func (lprc *LPRC) Retrieval(u uint64, l uint64) (string, error) {
 	var (
@@ -271,7 +274,7 @@ func (lprc *LPRC) populateBuffer(stringBuffer *bd.BitData, l uint64, u uint64, n
 	return nil
 }
 
-// FullPrefixSearch, given a prefix *prefix* returns all the strings that start with that prefix.
+// FullPrefixSearch , given a prefix *prefix* returns all the strings that start with that prefix.
 func (lprc *LPRC) FullPrefixSearch(prefix string) ([]string, error) {
 	var (
 		l            uint64                    // first node having *prefix* as prefix
@@ -342,7 +345,7 @@ func (lprc *LPRC) checkInterface() {
 	checkFunc(sPs)
 }
 
-// Returns the size in bits of the BitData used to compress the strings
+// GetBitDataSize returns the size in bits of the BitData used to compress the strings
 func (lprc *LPRC) GetBitDataSize() map[string]uint64 {
 	sizes := make(map[string]uint64)
 	sizes["StringSize"] = lprc.coding.Strings.Len

@@ -7,10 +7,11 @@ import (
 )
 
 var (
+	// ErrNoMoreBits is returned where there are no more bits on which iterate
 	ErrNoMoreBits = errors.New("no more bits")
 )
 
-// Bit stream in a right to left order (from the least significant bit to the most significant)
+// StringToBit is a bit stream in a right to left order (from the least significant bit to the most significant)
 type StringToBit struct {
 	// string (still decoded) on which iterate.
 	s string

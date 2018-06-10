@@ -1,4 +1,4 @@
-// stringcoding package provides an easy way to deal
+// Package stringcoding provides an easy way to deal
 // with strings in a bit-to-bit fashion
 // Each compressed/uncompressed string will be represented in the structure in right to left order (from the
 // least significant bit to the most significant).
@@ -12,6 +12,7 @@ import (
 	"github.com/golang-collections/go-datastructures/bitarray"
 )
 
+// Coding is a type that contains some of the data structures to run LPRC and PSRC
 type Coding struct {
 	// Strings consists of all the concatenated bit sequences
 	// corresponding to the suffixes L[i] of S's strings.
@@ -33,7 +34,7 @@ type Coding struct {
 	NextLengthsIndex uint64
 }
 
-// Create creates and returns a new Coding structure inserting the strings
+// New creates and returns a new Coding structure inserting the strings
 // that are in the array of strings.
 func New(strings []string) *Coding {
 	maxCapacity := bd.GetTotalBitCount(strings)

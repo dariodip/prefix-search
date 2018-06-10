@@ -1,19 +1,22 @@
-package word_reader
+package wordreader
 
 import (
 	"bufio"
 	"os"
 )
 
+// WordReader contains a path to a file and the list of strings in that file
 type WordReader struct {
 	path    string
 	Strings []string
 }
 
+// New returns a new WordReader
 func New(path string) *WordReader {
 	return &WordReader{path, []string{}}
 }
 
+// ReadLines reads all the lines in a file
 func (wr *WordReader) ReadLines() (int, error) {
 
 	file, err := os.Open(wr.path)
