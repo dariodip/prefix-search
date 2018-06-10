@@ -1,4 +1,4 @@
-package word_reader
+package wordreader
 
 import (
 	"path"

@@ -7,6 +7,7 @@ import (
 	"github.com/dariodip/prefix-search/word-reader"
 	"github.com/spf13/cobra"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -37,17 +38,9 @@ func init() {
 	fullbenchmarkCmd.MarkFlagRequired("input_p_file")
 	fullbenchmarkCmd.MarkFlagFilename("input_p_file")
 
-	fullbenchmarkCmd.Flags().Float64VarP(&min_epsilon, "min_epsilon", "n", 0, "Minimum value of"+
-		" Epsilon: the parameter given to the algorithm in order to decide how many bits compress in the trie.")
-	fullbenchmarkCmd.MarkFlagRequired("min_epsilon")
-
-	fullbenchmarkCmd.Flags().Float64VarP(&max_epsilon, "max_epsilon", "x", 0, "Maximum value of"+
-		" Epsilon: the parameter given to the algorithm in order to decide how many bits compress in the trie.")
-	fullbenchmarkCmd.MarkFlagRequired("max_epsilon")
-
-	fullbenchmarkCmd.Flags().Float64VarP(&step, "step", "s", 0, "Step value"+
-		" with which increment the value of epsilon")
-	fullbenchmarkCmd.MarkFlagRequired("step")
+	fullbenchmarkCmd.Flags().StringArrayVarP(&epsilonList, "epsilon_list", "l", []string{}, "List"+
+		" of epsilon value with which test the algorithm.")
+	fullbenchmarkCmd.MarkFlagRequired("epsilon_list")
 
 	fullbenchmarkCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Detailed Output ")
 
@@ -64,21 +57,32 @@ func init() {
 func fullBenchmark() {
 
 	// load words
-	wr := word_reader.New(inputFile)
+	wr := wordreader.New(inputFile)
 	wr.ReadLines()
 
 	// load prefix
-	wrp := word_reader.New(inputPrefixFile)
+	wrp := wordreader.New(inputPrefixFile)
 	wrp.ReadLines()
 
 	if outputFile == "" { // no output file specified
-		outputFile = fmt.Sprintf("%s-%s-%s-%.2f-%.2f.json", algorithm, getFileName(inputFile), getFileName(inputPrefixFile),
-			min_epsilon, max_epsilon)
+		outputFile = fmt.Sprintf("%s-%s-%s-(%d).json", algorithm, getFileName(inputFile),
+			getFileName(inputPrefixFile), time.Now().Unix())
 	}
 
-	allResults := []*Result{}
+	var (
+		allResults       = []*Result{}
+		epsilonListFloat []float64
+	)
+	for _, e := range epsilonList {
+		eFloat, err := strconv.ParseFloat(e, 64)
+		if err != nil {
+			fmt.Println("invalid epsilon list")
+			os.Exit(1)
+		}
+		epsilonListFloat = append(epsilonListFloat, eFloat)
+	}
 
-	for eps := min_epsilon; eps <= max_epsilon; eps += step {
+	for _, eps := range epsilonListFloat {
 		var impl stringcoding.PrefixSearch
 		var initTime time.Duration
 
@@ -99,7 +103,8 @@ func fullBenchmark() {
 			impl = psrcImpl
 			initTime = iTime
 		} else {
-			fmt.Errorf(`insert an algorithm between "lprc" and "psrc" \n`)
+			err := fmt.Errorf(`insert an algorithm between "lprc" and "psrc" \n`)
+			fmt.Println(err)
 			os.Exit(1)
 		}
 

@@ -1,5 +1,6 @@
 package stringcoding
 
+// PrefixSearch interface contains all the methods in order to run both LPRC and PSRC
 type PrefixSearch interface {
 	Populate() error
 	add(string, uint64) error

@@ -47,14 +47,16 @@ func runConsole(cmd *cobra.Command, args []string) {
 	fmt.Println("Enter a prefix to search: ")
 
 	var (
-		wr   = word_reader.New(inputFile)
+		wr   = wordreader.New(inputFile)
 		impl stringcoding.PrefixSearch
 	)
 
 	startTime := time.Now()
 	lines, err := wr.ReadLines() // read all lines from the file
 	if err != nil {
-		fmt.Errorf("error in load lines from file: %s \n", err)
+		err = fmt.Errorf("error in load lines from file: %s", err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	if algorithm == LPRCconst {
@@ -64,7 +66,8 @@ func runConsole(cmd *cobra.Command, args []string) {
 		psrcImpl := stringcoding.NewPSRC(wr.Strings, epsilon)
 		impl = &psrcImpl
 	} else {
-		fmt.Errorf(`insert an algorithm between "lprc" and "psrc" \n`)
+		err = fmt.Errorf(`insert an algorithm between "lprc" and "psrc" \n`)
+		fmt.Println(err)
 		os.Exit(1)
 	}
 

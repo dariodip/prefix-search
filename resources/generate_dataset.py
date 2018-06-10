@@ -19,6 +19,7 @@ def main(path: str):
     for k, v in random_indices_samples.items():
         # selecting k words indexes by the sample
         k_len_word_sample = [word_list[i].lower() for i in random_indices_samples[k]]
+        random.shuffle(k_len_word_sample)
         with open('./dataset/w{}.txt'.format(k), 'w+') as f:
             f.writelines(k_len_word_sample)
 

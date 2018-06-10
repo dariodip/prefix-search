@@ -6,6 +6,7 @@ import (
 	"github.com/golang-collections/go-datastructures/bitarray"
 )
 
+// PSRCBitDataSize contains the size of all the data structures for PSRC
 type PSRCBitDataSize struct {
 	StringsSize        uint64
 	StartsSize         uint64
@@ -14,6 +15,7 @@ type PSRCBitDataSize struct {
 	PrefixOrSuffixSize uint64
 }
 
+// PSRC contains all the data structures to run PSRC algorithm
 type PSRC struct {
 	coding                     *Coding
 	Epsilon                    float64
@@ -24,7 +26,7 @@ type PSRC struct {
 	isStoredSuffix             *bd.BitData
 }
 
-// LPRC (Locality Preserving Rear Coding) is a storage method
+// NewPSRC return an implementation of PSRC: a storage method
 // based on RC (Rear Coding) that stores a string s in an
 // uncompressed way if the latest c|s| bits do not contain
 // an uncompressed string.
@@ -42,6 +44,7 @@ func NewPSRC(strings []string, epsilon float64) PSRC {
 		bd.New(bitarray.NewBitArray(stringsCount), stringsCount)}
 }
 
+// Populate populates all the trie
 func (psrc *PSRC) Populate() error {
 	for i, s := range psrc.strings {
 		if err := psrc.add(s, uint64(i)); err != nil {
@@ -155,6 +158,8 @@ func (psrc *PSRC) getStringLength(i uint64) (uint64, error) {
 	return lengthI + ni, nil // number of bit saved by the coding
 }
 
+// Retrieval (u, l) returns the prefix of the string string(u) with length l.
+// So the returned prefix ends up in the edge (p(u), u).
 func (psrc *PSRC) Retrieval(u uint64, l uint64) (string, error) {
 	l += 8
 	var (
@@ -376,7 +381,7 @@ func (psrc *PSRC) String() string {
 		psrc, psrc.coding, psrc.Epsilon, psrc.c, psrc.strings, psrc.isUncompressed, psrc.isStoredSuffix)
 }
 
-// FullPrefixSearch, given a prefix *prefix* returns all the strings that start with that prefix.
+// FullPrefixSearch , given a prefix *prefix* returns all the strings that start with that prefix.
 func (psrc *PSRC) FullPrefixSearch(prefix string) ([]string, error) {
 	var (
 		lenPrefix    = uint64(len(prefix) * 8) // |prefix|
@@ -387,7 +392,7 @@ func (psrc *PSRC) FullPrefixSearch(prefix string) ([]string, error) {
 
 	for i := uint64(0); i < totalStrings; i++ {
 		retrievalI, err := psrc.Retrieval(i, lenPrefix)
-		if err != nil && err != ErrTooShortString {  // If the string is too short, then we simply skip it
+		if err != nil && err != ErrTooShortString { // If the string is too short, then we simply skip it
 			return nil, err // if error was found
 		}
 		if retrievalI == prefix { // we found the first node having
@@ -414,6 +419,7 @@ func (psrc *PSRC) FullPrefixSearch(prefix string) ([]string, error) {
 	return stringBuffer, nil
 }
 
+// GetBitDataSize returns the size in bits of the BitData used to compress the strings
 func (psrc *PSRC) GetBitDataSize() map[string]uint64 {
 	sizes := make(map[string]uint64)
 	sizes["StringSize"] = psrc.coding.Strings.Len
