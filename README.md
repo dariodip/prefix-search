@@ -42,7 +42,7 @@ If you want create an executable for each platform, then simply run:
 make [VERSION=<version>] release
 ```
 ## Usage
-Prefix search can be used by 3 command:
+Prefix search can be used with 4 commands:
 * **console**: 
 ```
 prefix-search console --help                                                                12:35   08.06.18 
@@ -107,7 +107,30 @@ Flags:
                               Default <word filename>-<prefix file name>-<epsilon>.json
   -v, --verbose               Detailed Output
 ```
+* **fullbenchmark**:
+```
+prefix-search fullbenchmark --help
+This command gives you the ability to run a sophisticated benchmarking test.
+You can select the file to open as dataset, the file to open as prefix, the lower value
+of epsilon, the higher value of epsilon and the step with which increase the value of it.
 
+The test gives you only a JSON file containing all the results of the test.
+
+Usage:
+  prefix-search fullbenchmark [flags]
+
+Flags:
+  -a, --algorithm string      Algorithmto use (default "lprc")
+  -h, --help                  help for fullbenchmark
+  -i, --input_file string     Input file containing all the word to build up the dictionary.
+  -p, --input_p_file string   Input file containing all the prefix to search on the dictionary.
+  -x, --max_epsilon float     Maximum value of Epsilon: the parameter given to the algorithm in order to decide how many bits compress in the trie.
+  -n, --min_epsilon float     Minimum value of Epsilon: the parameter given to the algorithm in order to decide how many bits compress in the trie.
+  -o, --output_file string    Output file containing the final output of lprc, with information about the memory usage and the time elapsed.
+                              Default <algorithm>-<word filename>-<prefix file name>-<min_epsilon>-<max_epsilon>.json
+  -s, --step float            Step value with which increment the value of epsilon
+  -v, --verbose               Detailed Output
+```
 ## Running the tests
 
 All the test are built using the package [testing](https://golang.org/pkg/testing/).

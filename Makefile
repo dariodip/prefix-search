@@ -15,7 +15,7 @@ VERSION ?= vlatest
 
 .PHONY: build
 build: install test
-	go build -o $BIN_DIR
+	go build -o $(BIN_DIR)/$(BINARY)
 
 PLATFORMS := windows linux darwin
 os = $(word 1, $@)
