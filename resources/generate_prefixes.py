@@ -3,7 +3,7 @@ import random
 import itertools
 import string
 
-MAX_PREFIXES = 100000
+MAX_PREFIXES = 10000
 
 
 def generate_prefixes():
@@ -23,7 +23,7 @@ def generate_prefixes():
 
 if __name__ == "__main__":
     prefixes = generate_prefixes()
-    prefix_file_path = os.path.join(".", "prefixes", "pref100k.txt")
+    prefix_file_path = os.path.join(".", "prefixes", "pref10k.txt")
     lenss = [len(p) for p in prefixes]
     with open(prefix_file_path, "w+") as f:
         for prefix in prefixes:
