@@ -23,7 +23,7 @@ PROJECT_DIR_NAME = "prefix-search"
 SCRIPTS_DIR_NAME = "scripts"
 DATASETS_DIR_PATH = "resources/dataset"
 RESULTS_DIR = "resources/results"
-PREFIX_FILE_PATH = "resources/prefixes/pref10k.txt"
+PREFIX_FILE_PATH = "resources/prefixes/pref1k.txt"
 EPSILON_DATASIZE_FILENAME = RESULTS_DIR + '/' + 'eps_{}_datasize.csv'
 EPSILON_ALG_FILENAME = RESULTS_DIR + '/' + 'eps_{}_alg_{}.csv'
 
