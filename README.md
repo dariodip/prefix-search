@@ -4,6 +4,7 @@
 [![Build Status](https://travis-ci.com/dariodip/prefix-search.svg?token=NZ9VK4sB4UsVShV1p8wD&branch=master)](https://travis-ci.com/dariodip/prefix-search)
 [![GoDoc](https://godoc.org/github.com/spf13/cobra?status.svg)](https://godoc.org/github.com/dariodip/prefix-search)
 [![Go Report Card](https://goreportcard.com/badge/github.com/dariodip/prefix-search)](https://goreportcard.com/report/github.com/dariodip/prefix-search)
+[![Coverage Status](https://coveralls.io/repos/github/dariodip/prefix-search/badge.svg?branch=master)](https://coveralls.io/github/dariodip/prefix-search?branch=master)
 
 prefix-search is an implementation of the [paper](https://link.springer.com/chapter/10.1007/978-3-642-40450-4_40) *Compressed Cache-Oblivious String B-tree* of Paolo Ferragina and Rossano Venturini. We developed the proposed algorithm (LPRC) and a new one (PSRC), giving you the ability to deal with online dictionaries of strings in an unspecified order.
 
