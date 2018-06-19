@@ -22,16 +22,21 @@ if __name__ == '__main__':
                 masked_subnet_ip = subnet_ip_unpacked & mask
                 sub_net_ip = struct.pack(">I", masked_subnet_ip)
 
-                to_save.append(socket.inet_ntoa(sub_net_ip))  # append subnet ip
-                net_ips.append(socket.inet_ntoa(sub_net_ip))
+                ntoa = socket.inet_ntoa(sub_net_ip)
+                if ntoa in net_ips:
+                    continue
+                to_save.append(ntoa)  # append subnet ip
+                net_ips.append(ntoa)
                 i = 1
                 while len(to_save) < pow_c and subnet_count > 0:
                     ip = socket.inet_ntoa(struct.pack(">I", masked_subnet_ip + i))
                     i += 1
                     subnet_count -= 1
                     to_save.append(ip)
-
-            f.write("\n".join(to_save))
+            if len(to_save) == len(set(to_save)):
+                f.write("\n".join(to_save))
+            else:
+                to_save = list(set(to_save))
 
 
     to_save_prefixes = []
