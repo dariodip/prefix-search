@@ -3,9 +3,12 @@ import socket
 import struct
 import os
 
+MAX_IT = 1000
 count = [2**i for i in range(3, 10)]
 
 if __name__ == '__main__':
+
+    net_ips = []
 
     for pow_c in count:
         to_save = []
@@ -20,7 +23,7 @@ if __name__ == '__main__':
                 sub_net_ip = struct.pack(">I", masked_subnet_ip)
 
                 to_save.append(socket.inet_ntoa(sub_net_ip))  # append subnet ip
-
+                net_ips.append(socket.inet_ntoa(sub_net_ip))
                 i = 1
                 while len(to_save) < pow_c and subnet_count > 0:
                     ip = socket.inet_ntoa(struct.pack(">I", masked_subnet_ip + i))
@@ -29,3 +32,19 @@ if __name__ == '__main__':
                     to_save.append(ip)
 
             f.write("\n".join(to_save))
+
+
+    to_save_prefixes = []
+
+    while len(to_save_prefixes) < MAX_IT:
+        gen_pref_ip = net_ips[random.randint(0, len(net_ips) - 1)]
+        if gen_pref_ip not in to_save_prefixes:
+            to_save_prefixes.append(gen_pref_ip)
+        else:
+            n_gen = socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff)))[0:random.randint(1, 9)]
+            if n_gen not in to_save_prefixes:
+                to_save_prefixes.append(n_gen)
+
+    with open(os.path.join(".", "prefixes", "ip_pref1k.txt"), 'w+') as f:
+        f.write("\n".join(to_save_prefixes))
+
