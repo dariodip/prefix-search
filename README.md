@@ -9,12 +9,12 @@ prefix-search is an implementation of the [paper](https://link.springer.com/chap
 
 ## Getting Started
 
-With these instructions you will get a copy of the project up and running on your local machine for development and testing purposes.
+With these instructions, you will get a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
-You need make and [Golang](https://golang.org/) installed in order to run all the command listed next. 
+You need [make](https://www.gnu.org/software/make/) and [Golang](https://golang.org/) installed in order to run all the command listed next. 
 
-You need [Python 3](https://www.python.org/) if you want to run our scripts.
+You also need [Python 3](https://www.python.org/) to run our scripts.
 
 ### Installing
 
@@ -27,7 +27,7 @@ In order to create an executable, in the project root directory run the followin
 ```
 make build
 ```
-this will install all the dependecies, run all the tests and create and executable inside your `$GOPATH/bin` directory.
+this will install all the dependencies, run all the tests and create an executable inside your `$GOPATH/bin` directory.
 
 ## Release
 If you want to create an executable for a specific platform, run the following:
@@ -37,7 +37,7 @@ make [VERSION=<version>] <platforms>
 where the platforms are `windows`, `linux` and `darwin`. If not specified, the value of the parameter `VERSION` will be
 `vlatest`.
 
-If you want create an executable for each platform, then simply run:
+If you want to create an executable for each platform, then simply run:
 ```
 make [VERSION=<version>] release
 ```
@@ -46,7 +46,7 @@ Prefix search can be used with 4 commands:
 * **console**: 
 ```
 prefix-search console --help                                                                12:35   08.06.18 
-Using "console" you can start interactive console that gives you the opportunity
+Using "console" you can start an interactive console that gives you the opportunity
 to, given a preloaded dataset, to find prefixes interactively.
 
 Usage:
